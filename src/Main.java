@@ -9,8 +9,15 @@ public class Main {
          */
         Scanner keyboard = new Scanner(System.in);
 
-        int degree = keyboard.nextInt();
+        //int degree = keyboard.nextInt();
+        int degree = 4;
         BPlusTree bPlusTree = new BPlusTree(degree);
+        bPlusTree.insert(1);
+        bPlusTree.insert(3);
+        bPlusTree.insert(2);
+        bPlusTree.show();
+
+        keyboard.close();
 
     }
 }

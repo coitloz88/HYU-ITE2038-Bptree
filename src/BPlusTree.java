@@ -13,15 +13,39 @@ public class BPlusTree {
         root = new Node(degree);
     }
     
-    public boolean search(int target){
+    public Node search(int target){
         //TODO: search 함수 구현
-        return false;
+        /**
+         * root부터 탐색 시작
+         * 동일한 값이 있을 때 return
+         * 사이값일 경우 그 사이 노드로 들어감
+         *
+         * 찾으면 NULL반환, 없으면 직전에 검사한 노드 반환
+         */
+        Node tmpNode = root;
+
+        while(!tmpNode.isLeaf()){
+            // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
+            int[] tmpKeys = tmpNode.getKeys();
+            int i = 0;
+            for (i = 0; target < tmpKeys[i] && i < tmpKeys.length; i++) {
+                // 현재 노드가 가진 key의 값의 어느 범위에 들어가는지 확인해본다
+            }
+
+            if(target == tmpKeys[i]){
+                if(i >= tmpKeys.length) tmpNode = tmpNode.getRightNode();
+                else tmpNode = tmpNode.getLeftNode(i + 1);
+            }
+            else tmpNode = tmpNode.getLeftNode(i);
+        }
+
+        return tmpNode;
     }
 
     public void insert(int inputIndex){
 
         /**
-         * search해서 알맞는 노드까지 감
+         * search?해서 알맞는 노드까지 감
          * 그 노드에 넣을 자리가 있으면 넣음
          * 넣을 자리가 없으면 쪼개기!
          */
@@ -42,7 +66,7 @@ public class BPlusTree {
              *      rightNode를 오른쪽으로 쪼개지는 Node 주소로 설정
              * 2. 오른쪽으로 쪼개지는 노드: 쪼개지는 arrayIndex 이상의 key를 나눠가짐
              *
-             * 3. 새로운 root: 새로운 node 생성후 쪼개진 애를 key로 가짐
+             * 3. ??
              */
 
         }
@@ -53,6 +77,10 @@ public class BPlusTree {
     }
 
     public void show(){
-        root.showKeys();
+        int[] keys = root.getKeys();
+        for (int key:keys
+             ) {
+            System.out.println(key);
+        }
     }
 }
