@@ -8,28 +8,34 @@ public class Node {
      * boolean push_back(int index): index값을 하나 받으면 key배열에 더 넣을 수 있는지 확인해보고 되면 넣고 안되면 0을 반환하는 함수
      */
 
-    private int totalNumberOfKeys;
     private int currentNumberOfKeys;
     private int[] keys;
     private Node[] leftNodes;
     private Node rightNode;
 
     public Node(int numberOfKey){
-        totalNumberOfKeys = numberOfKey;
         currentNumberOfKeys = 0;
-        keys = new int[numberOfKey];
-        leftNodes = new Node[numberOfKey];
+        keys = new int[numberOfKey - 1];
+        leftNodes = new Node[numberOfKey - 1];
     }
 
-    public int getTotalNumberOfKeys(){
-        return totalNumberOfKeys;
+    //TODO: leftNode, rightNode에 포인터 건네주는 함수 구현
+    
+    public int getCurrentNumberOfKeys() {
+        return currentNumberOfKeys;
     }
 
-    public boolean push_back(int index){
-        if(currentNumberOfKeys < totalNumberOfKeys){
-            keys[currentNumberOfKeys++] = index;
-            return true;
+    public void push_back(int index){
+        keys[currentNumberOfKeys++] = index;
+        //TODO: 오름차순 정렬
+    }
+
+    public void showKeys(){
+        for (int key:keys
+             ) {
+            System.out.print(key + " ");
         }
-        return false;
+        System.out.println();
     }
+
 }
