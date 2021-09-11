@@ -19,11 +19,15 @@ public class Node {
         leftNodes = new Node[numberOfKey - 1];
     }
 
-    //TODO: leftNode, rightNode에 포인터 건네주는 함수 구현
-    
+    public void setCurrentNumberOfKeys(int currentNumberOfKeys) {
+        this.currentNumberOfKeys = currentNumberOfKeys;
+    }
+
     public int getCurrentNumberOfKeys() {
         return currentNumberOfKeys;
     }
+
+    //TODO: leftNode, rightNode에 포인터 건네주는 함수 구현
 
     public void push_back(int index){
         keys[currentNumberOfKeys++] = index;
@@ -31,8 +35,7 @@ public class Node {
     }
 
     public void showKeys(){
-        for (int key:keys
-             ) {
+        for (int key:keys) {
             System.out.print(key + " ");
         }
         System.out.println();

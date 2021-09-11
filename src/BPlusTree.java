@@ -19,6 +19,13 @@ public class BPlusTree {
     }
 
     public void insert(int inputIndex){
+
+        /**
+         * search해서 알맞는 노드까지 감
+         * 그 노드에 넣을 자리가 있으면 넣음
+         * 넣을 자리가 없으면 쪼개기!
+         */
+
         if(root.getCurrentNumberOfKeys() < degree-1){
             root.push_back(inputIndex);
         } else {
@@ -27,6 +34,17 @@ public class BPlusTree {
             1차 쪼개기 -> 노드 남기고 올림
             2차 쪼개기(loop)
              */
+
+            //linked list 생성시 올라간 애는 오른쪽으로 쪼개지는 노드에 붙음
+            /**
+             * 쪼개지는 애: 0부터 시작한다고 가정, Up(M / 2) - 1
+             * 1. 왼쪽으로 쪼개지는 노드: 쪼개지는 arrayIndex 미만의 key를 나눠가짐(기존 노드에서 current Index 수정)
+             *      rightNode를 오른쪽으로 쪼개지는 Node 주소로 설정
+             * 2. 오른쪽으로 쪼개지는 노드: 쪼개지는 arrayIndex 이상의 key를 나눠가짐
+             *
+             * 3. 새로운 root: 새로운 node 생성후 쪼개진 애를 key로 가짐
+             */
+
         }
     }
 
