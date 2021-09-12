@@ -13,12 +13,14 @@ public class Node{
     private int[] keys;
     private Node[] leftNodes;
     private Node rightNode;
+    private int[] values;
 
-    public Node(int numberOfKey){
-        leaf = false;
+    public Node(int numberOfKey, boolean isLeaf){
+        leaf = isLeaf;
         currentNumberOfKeys = 0;
         keys = new int[numberOfKey - 1];
         leftNodes = new Node[numberOfKey - 1];
+        values = new int[numberOfKey - 1];
     }
 
     public boolean isLeaf() {
@@ -41,15 +43,13 @@ public class Node{
         return keys;
     }
 
-    public void setKeys(int[] keys) {
-        this.keys = keys;
-    }
+    public void setKeys(int[] keys) { this.keys = keys; }
 
     public Node getLeftNode(int i) {
         return leftNodes[i];
     }
 
-    public void setLeftNodes(Node leftNode, int i) {
+    public void setLeftNode(Node leftNode, int i) {
         leftNodes[i] = leftNode;
     }
 
@@ -61,18 +61,17 @@ public class Node{
         this.rightNode = rightNode;
     }
 
+    public int getValue(int i) { return values[i]; }
+
+    public void setValue(int value, int i) {
+        values[i] = value;
+    }
+
     //TODO: leftNode, rightNode에 포인터 건네주는 함수 구현
 
     public void push_back(int index){
         keys[currentNumberOfKeys++] = index;
         //TODO: 오름차순 정렬
-    }
-
-    public void showKeys(){
-        for (int key:keys) {
-            System.out.print(key + " ");
-        }
-        System.out.println();
     }
 
 }

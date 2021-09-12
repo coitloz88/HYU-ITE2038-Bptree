@@ -10,36 +10,39 @@ public class BPlusTree {
 
     public BPlusTree(int degree){
         this.degree = degree;
-        root = new Node(degree);
+        root = new Node(degree, true);
     }
     
-    public Node search(int target){
-        //TODO: search 함수 구현
+    public String singleKeySearch(int target){
         /**
          * root부터 탐색 시작
          * 동일한 값이 있을 때 return
          * 사이값일 경우 그 사이 노드로 들어감
          *
-         * 찾으면 NULL반환, 없으면 직전에 검사한 노드 반환
+         * 찾으면 해당하는 value 반환
          */
-        Node tmpNode = root;
+            Node tmpNode = root;
 
-        while(!tmpNode.isLeaf()){
-            // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
+            while (!tmpNode.isLeaf()) {
+                // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
+                int[] tmpKeys = tmpNode.getKeys();
+                int i;
+                for (i = 0; i < tmpNode.getCurrentNumberOfKeys() - 1 && target > tmpKeys[i]; i++) {
+                    // 현재 노드가 가진 key의 값의 어느 범위에 들어가는지 확인해본다(i가 그만큼 증가)
+                }
+
+                if (target == tmpKeys[i]) {
+                    if (i >= tmpNode.getCurrentNumberOfKeys()) tmpNode = tmpNode.getRightNode();
+                    else tmpNode = tmpNode.getLeftNode(i + 1);
+                } else tmpNode = tmpNode.getLeftNode(i);
+            }
             int[] tmpKeys = tmpNode.getKeys();
-            int i = 0;
-            for (i = 0; target < tmpKeys[i] && i < tmpKeys.length; i++) {
-                // 현재 노드가 가진 key의 값의 어느 범위에 들어가는지 확인해본다
+            int i;
+            for (i = 0; i < tmpNode.getCurrentNumberOfKeys() - 1 && target > tmpKeys[i]; i++) {
+                System.out.println("i: " + i);
             }
-
-            if(target == tmpKeys[i]){
-                if(i >= tmpKeys.length) tmpNode = tmpNode.getRightNode();
-                else tmpNode = tmpNode.getLeftNode(i + 1);
-            }
-            else tmpNode = tmpNode.getLeftNode(i);
-        }
-
-        return tmpNode;
+            if(target == tmpKeys[i]) return String.valueOf(tmpNode.getValue(i));
+            else return "NOT FOUND";
     }
 
     public void insert(int inputIndex){
@@ -49,9 +52,10 @@ public class BPlusTree {
          * 그 노드에 넣을 자리가 있으면 넣음
          * 넣을 자리가 없으면 쪼개기!
          */
+        Node tmpNode = root;
 
-        if(root.getCurrentNumberOfKeys() < degree-1){
-            root.push_back(inputIndex);
+        if(tmpNode.getCurrentNumberOfKeys() < degree-1){
+            tmpNode.push_back(inputIndex);
         } else {
             //TODO: 쪼개는 insert 함수 구현
             /*
@@ -80,7 +84,8 @@ public class BPlusTree {
         int[] keys = root.getKeys();
         for (int key:keys
              ) {
-            System.out.println(key);
+            System.out.print(key + " ");
         }
+        System.out.println();
     }
 }
