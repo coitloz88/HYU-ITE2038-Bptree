@@ -70,6 +70,7 @@ public class Node{
     //TODO: leftNode, rightNode에 포인터 건네주는 함수 구현
 
     public void push_back(int index){
+        values[currentNumberOfKeys] = index * 11;
         keys[currentNumberOfKeys++] = index;
         //TODO: 오름차순 정렬
     }

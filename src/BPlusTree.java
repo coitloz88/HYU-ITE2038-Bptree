@@ -12,6 +12,27 @@ public class BPlusTree {
         this.degree = degree;
         root = new Node(degree, true);
     }
+
+    public Node singleKeySearchPreviousNode(int target){
+        Node tmpNode = root;
+
+        while (!tmpNode.isLeaf()) {
+            // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
+            int[] tmpKeys = tmpNode.getKeys();
+            int i;
+            for (i = 0; i < tmpNode.getCurrentNumberOfKeys() - 1 && target > tmpKeys[i]; i++) {
+                // 현재 노드가 가진 key의 값의 어느 범위에 들어가는지 확인해본다(i가 그만큼 증가)
+            }
+
+            if (target == tmpKeys[i]) {
+                if (i >= tmpNode.getCurrentNumberOfKeys()) tmpNode = tmpNode.getRightNode();
+                else tmpNode = tmpNode.getLeftNode(i + 1);
+            } else tmpNode = tmpNode.getLeftNode(i);
+        }
+
+        return tmpNode;
+
+    }
     
     public String singleKeySearch(int target){
         /**
@@ -21,38 +42,24 @@ public class BPlusTree {
          *
          * 찾으면 해당하는 value 반환
          */
-            Node tmpNode = root;
-
-            while (!tmpNode.isLeaf()) {
-                // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
-                int[] tmpKeys = tmpNode.getKeys();
-                int i;
-                for (i = 0; i < tmpNode.getCurrentNumberOfKeys() - 1 && target > tmpKeys[i]; i++) {
-                    // 현재 노드가 가진 key의 값의 어느 범위에 들어가는지 확인해본다(i가 그만큼 증가)
-                }
-
-                if (target == tmpKeys[i]) {
-                    if (i >= tmpNode.getCurrentNumberOfKeys()) tmpNode = tmpNode.getRightNode();
-                    else tmpNode = tmpNode.getLeftNode(i + 1);
-                } else tmpNode = tmpNode.getLeftNode(i);
-            }
+            Node tmpNode = singleKeySearchPreviousNode(target);
+            
+            //leaf 도달
             int[] tmpKeys = tmpNode.getKeys();
             int i;
-            for (i = 0; i < tmpNode.getCurrentNumberOfKeys() - 1 && target > tmpKeys[i]; i++) {
-                System.out.println("i: " + i);
-            }
+            for (i = 0; i < tmpNode.getCurrentNumberOfKeys() - 1 && target > tmpKeys[i]; i++) { }
             if(target == tmpKeys[i]) return String.valueOf(tmpNode.getValue(i));
             else return "NOT FOUND";
     }
 
-    public void insert(int inputIndex){
+    public void insert(int inputIndex){ //중복 key는 들어오지 않는다
 
         /**
          * search?해서 알맞는 노드까지 감
          * 그 노드에 넣을 자리가 있으면 넣음
          * 넣을 자리가 없으면 쪼개기!
          */
-        Node tmpNode = root;
+        Node tmpNode = singleKeySearchPreviousNode(inputIndex);
 
         if(tmpNode.getCurrentNumberOfKeys() < degree-1){
             tmpNode.push_back(inputIndex);
@@ -72,6 +79,12 @@ public class BPlusTree {
              *
              * 3. ??
              */
+            int[] tmpKeys = tmpNode.getKeys();
+            int i;
+            for (i = 0; i < tmpNode.getCurrentNumberOfKeys() - 1 && inputIndex > tmpKeys[i]; i++) { /*inputIndex는 tmpKey[i]보다는 크고 tmpKey[i+1]보다는 작음 */ }
+
+
+
 
         }
     }
