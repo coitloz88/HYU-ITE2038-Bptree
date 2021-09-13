@@ -53,8 +53,60 @@ public class BPlusTree {
             else return "NOT FOUND";
     }
 
-    public void split(Node superParentNode, int inputIndex, int inputValue, boolean newMode){
+    public String rangeSearch(){
+        //TODO: rangeSearch 함수 구현
+        return "NOT FOUND";
+    }
 
+    //split이 필요한 경우만 받음
+    public Node split(Node superParentNode, int inputIndex, int inputValue, boolean newMode){
+        /**
+         * <함수인자>
+         *     1. superParentNode: 추가 key(&value)가 삽입 가능하면서 가장 아래인 노드
+         *     2. inputIndex: 추가하려는 index
+         *     3. inputValue: 추가하려는 value(inputIndex와 쌍)
+         *     4. newMode: 맨 처음 root를 쪼개거나(아직 다른 상황은 생각 못해봤는데)..할때 등 동적할당해야할 노드가 2개인 경우 true
+         * </함수인자>
+         *
+         * <함수개요>
+         *     +) 지금 insert에 구현되어있는.. superParentNode찾는것도 얘가하면 될듯? 재귀함수가 아니니까 << 이거는 findSuperParent함수로 찾아주자!
+         *        삽입하고 싶은 가득찬 노드만 받으면 어디서부터 쪼개면 될지 차자작 계산해서 차자작 쪼개주는 함수!
+         *
+         *     split이 필요한 경우만 parent node를 받는다. 반복문으로 split이 필요한 경우를 전부 split한다.
+         *     bottom-up으로 구현할 경우 parent node를 찾기 힘들기 때문에, 가장 마지막으로 추가 key를 끼울 수 있는 node를 함수 인자로 받아 그 노드의 자식부터 쪼갠다.
+         *     # root가 leaf가 아니며 쪼개야하는 경우, root가 leaf이며 쪼개야하는 경우(node 2개 동적할당 필요)는 예외 처리를 해준다.
+         *
+         *     newMode == false일때
+         *     1. parentNode를 superParentNode로 초기화
+         *     2. inputIndex-value쌍을 끼워넣으려면 parentNode에서 몇번째에 있는 childNode로 가면 되는지 순서(orderInParent)를 찾는다.
+         *     3. 해당하는 leftNode[orderInParent]를 childNode에 대입(포인터를 건네줌)
+         *     4. childNode가 leaf인지 검사
+         *      4-1.leaf가 아닐때
+         *          1) inputIndex를 끼워넣으려면 child의 몇번째에 가면 되는지 미리 조사한다(orderInChild).
+         *          2) childNode의 [divide_i]번째에 해당하는 정보(key, leftNode 혹은 rightNode)를 parent로 push_back. 이때 value는 주지 않음
+         *             이때, 끼워넣은 leftNode 혹은 rightNode...등은 직접 조정해야한다. push_back함수 참조
+         *          3) (rightChild가 우선!) child를 뒤가 짤린 왼쪽용 childNode(뒤의 정보를 초기화)와 rightChildNode(new Node로 새롭게 동적할당)로 나눠준다.
+         *          4) orderInChild가 divide_i보다 큰지 안큰지 구분, 맞는 child(left or right)로 찾아간다.
+         *          5) loop를 돕시다. 찾아간 child를 parentNode에 담는다.
+         *          6) 2.로 돌아감
+         *      4-2. leaf일때
+         *          1) inputIndex를 끼워넣으려면 child의 몇번째에 가면 되는지 미리 조사한다(orderInChild).
+         *          2) childNode의 [divide_i]번째에 해당하는 정보(key, leftNode 혹은 rightNode)를 parent로 push_back. 이때 value는 주지 않음
+         *             이때, 끼워넣은 leftNode 혹은 rightNode...등은 직접 조정해야한다. push_back함수 참조
+         *          3) (rightChild가 우선!) child를 뒤가 짤린 왼쪽용 childNode(뒤의 정보를 초기화)와 rightChildNode(new Node로 새롭게 동적할당)로 나눠준다.
+         *          4) orderInChild가 divide_i보다 큰지 안큰지 구분, 맞는 child(left or right)로 찾아간다.
+         *          5) 해당 노드는 이제 여유가 생겼기 때문에 inputIndex-inputValue쌍을 push_back 해줍시다
+         *
+         *
+         *     아.. 아니면 Node를 반환하는 함수로.. <<이걸로 가자! delete에도 써먹어야할 것 같으니
+         *     parentNode 아래의 child(index를 포함할 가능성이 높은)Node를 쪼개서 parent에 올려주는 역할... 그러고 해당 child(index에 가까운)Node를 반환
+         *     child가 leaf인지 검사해서 leaf일때까지 쪼개주는 함수로...? 그리고 그렇게 여유가 생긴 childNode를 반환하면 이제 여유있는 node에 push_back만 하면 되는상황
+         * </함수개요>
+         */
+
+        Node parentNode = superParentNode;
+        Node childNode;
+        return parentNode; //삽입할 수 있는 node를 반환할때까지 loop를 돌면 while문안에 parentNode = childNode..어쩌고 하는게 마지막으로 한번더 실행이 되므로 parent 반환해야함
     }
 
     public void insert(int inputIndex, int inputValue){ //중복 key는 들어오지 않는다

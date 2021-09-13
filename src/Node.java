@@ -61,9 +61,9 @@ public class Node{
 
     public void setValue(int value, int i) { values[i] = value; }
 
-    //TODO: leftNode, rightNode에 포인터 건네주는 함수 구현
-
+    //leaf에 삽입시 key-value 오름차순 정렬 삽입, parent삽입시..코드참고
     public void push_back(int index, int value){
+
         if(currentNumberOfKeys >= keys.length){
             System.err.println("push_back() 오류: 키 개수 초과");
             return;
