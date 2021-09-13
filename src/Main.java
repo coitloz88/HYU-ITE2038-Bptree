@@ -10,14 +10,17 @@ public class Main {
          */
         Scanner keyboard = new Scanner(System.in);
         //int degree = keyboard.nextInt();
-        int degree = 5;
+        int degree = 4;
         BPlusTree bPlusTree = new BPlusTree(degree);
-        //bPlusTree.insert(1, 11);
+        bPlusTree.insert(3, 33);
+        bPlusTree.insert(4, 44);
+        bPlusTree.insert(2, 22);
+        bPlusTree.insert(1, 11);
 
         bPlusTree.show();
-
+        System.out.println();
         System.out.println("single key search 시작!");
-        System.out.println(bPlusTree.singleKeySearch(8));
+        System.out.println(bPlusTree.singleKeySearch(4));
 
         keyboard.close();
 

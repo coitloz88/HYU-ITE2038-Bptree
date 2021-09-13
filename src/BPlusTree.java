@@ -57,7 +57,7 @@ public class BPlusTree {
 
     }
 
-    public void insert(int inputIndex, int value){ //중복 key는 들어오지 않는다
+    public void insert(int inputIndex, int inputValue){ //중복 key는 들어오지 않는다
 
         /**
          * search?해서 알맞는 노드까지 감
@@ -65,6 +65,10 @@ public class BPlusTree {
          * 넣을 자리가 없으면 쪼개기!
          */
         Node searchedLeafNode = singleKeySearchNode(inputIndex, false);
+
+        if(searchedLeafNode.getCurrentNumberOfKeys() < degree){
+            searchedLeafNode.push_back(inputIndex, inputValue);
+        }
 
         //linked list 생성시 올라간 애는 오른쪽으로 쪼개지는 노드에 붙음
         /**
@@ -86,7 +90,7 @@ public class BPlusTree {
          *     - 앗...근데 이렇게 superParentNode를 찾아도 해당 node에서 어디로 가야할지 모르니까ㅜ 안되네...
          * </구현개요>
          */
-
+/*
         Node superParentNode = null;
         Node searchTmpNode = root;
         while (!searchTmpNode.isLeaf()) {
@@ -108,15 +112,15 @@ public class BPlusTree {
             //root도 쪼개야 하는 경우
             //1. root를 처음으로 쪼개는 경우
             //2. 그냥 나머지가 다 꽉차서 root를 쪼개야하는 경우
-        } /*else if (superParentNode == root){
+        } else if (superParentNode == root){
                 //root에 노드 하나 더 추가하는 경우(경우 나눌 필요 있나?)
-            } */ else {
+            }  else {
             //internal node가 superParentNode인 경우
 
             //TODO: split함수 구현
         }
 
-
+*/
 
     }
 
@@ -125,11 +129,8 @@ public class BPlusTree {
     }
 
     public void show(){
-        int[] keys = root.getKeys();
-        for (int key:keys
-             ) {
-            System.out.print(key + " ");
+        for (int i = 0; i < root.getCurrentNumberOfKeys(); i++) {
+            System.out.println("key: " + root.getKey(i) + ", value: " + root.getValue(i));
         }
-        System.out.println();
     }
 }
