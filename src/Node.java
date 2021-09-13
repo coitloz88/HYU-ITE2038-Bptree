@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class Node{
     /**
      * 0. leaf인지 아닌지
@@ -11,18 +9,23 @@ public class Node{
      */
 
     private boolean leaf; //root혹은 internal일때는 false,leaf일때는 true
-    private int currentNumberOfKeys;
+    private int currentNumberOfKeys; //배열 마지막 번호보다 1 크다.
     private int[] keys;
-    private Node[] leftNodes;
-    private Node rightNode;
     private int[] values;
+    private Node[] childNodes;
+    private Node parent;
 
-    public Node(int degree, boolean isLeaf){
+    public Node(int totalNumberOfKeys, boolean isLeaf, Node parent){
         leaf = isLeaf;
+
         currentNumberOfKeys = 0;
-        keys = new int[degree - 1];
-        leftNodes = new Node[degree - 1];
-        values = new int[degree - 1];
+
+        keys = new int[totalNumberOfKeys];
+        values = new int[totalNumberOfKeys];
+
+        childNodes = new Node[totalNumberOfKeys + 1];
+        for (int i = 0; i < totalNumberOfKeys + 1; i++) childNodes[i] = null;
+        this.parent = parent;
     }
 
     public boolean isLeaf() {
@@ -41,32 +44,78 @@ public class Node{
         this.currentNumberOfKeys = currentNumberOfKeys;
     }
 
-    public int[] getKeys() {
-        return keys;
-    }
-
     public int getKey(int i) { return keys[i]; }
 
     public void setKey(int key, int i) { keys[i] = key; }
 
-    public Node getLeftNode(int i) { return leftNodes[i]; }
+    public Node getChildNode(int i) { return childNodes[i]; }
 
-    public void setLeftNode(Node leftNode, int i) { leftNodes[i] = leftNode; }
-
-    public Node getRightNode() { return rightNode; }
-
-    public void setRightNode(Node rightNode) { this.rightNode = rightNode; }
+    public void setChildNode(Node leftNode, int i) { childNodes[i] = leftNode; }
 
     public int getValue(int i) { return values[i]; }
 
     public void setValue(int value, int i) { values[i] = value; }
 
-    //TODO: leftNode, rightNode에 포인터 건네주는 함수 구현
+    public Node getParent() { return parent; }
 
-    public void push_back(int index){
-        values[currentNumberOfKeys] = index * 11;
-        keys[currentNumberOfKeys] = index;
-        Arrays.sort(keys, 0, currentNumberOfKeys++);
+    public void setParent(Node parent) { this.parent = parent; }
+
+    //input이 삽입되면 되는 [index], 혹은 input이 위치한 [index] 반환
+    public int findIndexOfKeyInKeyArray(int input){
+        //주의: search를 하는게 아니라 그냥 순서만 찾는 경우 음... 암튼 주의
+        int index;
+        for (index = 0; index < currentNumberOfKeys && input > keys[index]; index++) { } //input이 모든 key값보다 크면 keys 크기를 1 초과하는 값을 가짐
+        return index;
+    }
+
+    //leaf에 삽입시 key-value 오름차순 정렬 삽입, parent삽입시..코드참고
+    public void push_back(int key, int value){
+
+        if(currentNumberOfKeys >= keys.length){
+            System.err.println("push_back() 오류: 키 개수 초과");
+            return;
+        }
+
+        int target_i = findIndexOfKeyInKeyArray(key); //[target_i]에 (index, value)가 들어간다. key를 오름차순으로 정렬하기 위함
+
+        int[] tmpKeyArray = new int[currentNumberOfKeys - target_i];
+        if(leaf) {
+            //leaf인 경우, keys와 values가 유효함. key와 value는 1:1로 대응됨
+            int[] tmpValueArray = new int[currentNumberOfKeys - target_i];
+            for (int i = target_i; i < currentNumberOfKeys; i++) {
+                tmpKeyArray[i - target_i] = keys[i];
+                tmpValueArray[i - target_i] = values[i];
+            }
+            keys[target_i] = key;
+            values[target_i] = value;
+            ++currentNumberOfKeys;
+            for (int i = target_i + 1; i < currentNumberOfKeys; i++) {
+                keys[i] = tmpKeyArray[i - target_i - 1];
+                values[i] = tmpValueArray[i - target_i - 1];
+            }
+        } else { //TODO: 이거 다시 확인해보기!!
+            //leaf가 아닌 경우, keys와 leftnodes가 유효함. keys와 leftnodes는 1:1로 대응되지 않음(leftnodes는 듬성듬성 존재)
+            //insert나 delete할때 노드를 쪼개고 부모에 넣는 경우를 위해 사용
+            //leftnode[-]가 null인 경우 null로, 주소를 가지는 경우는 주소를 저장해줌
+
+            //쪼개기 할때, rightChild가 새로 생긴다고 가정
+            
+            Node[] tmpLeftNodesArray = new Node[currentNumberOfKeys - target_i + 1];
+            for (int i = target_i; i < currentNumberOfKeys; i++) {
+                tmpKeyArray[i - target_i] = keys[i];
+                tmpLeftNodesArray[i - target_i] = childNodes[i];
+            } tmpLeftNodesArray[currentNumberOfKeys - target_i] = childNodes[currentNumberOfKeys];
+
+            //target_i에 key가 삽입된다.
+            //[target_i + 1]에는 새로운 노드가 연결된다(BPlusTree.java에서 처리)
+            keys[target_i] = key;
+            childNodes[target_i + 1] = null;
+            ++currentNumberOfKeys;
+            for (int i = target_i + 1; i < currentNumberOfKeys; i++) {
+                keys[i] = tmpKeyArray[i - target_i - 1];
+                childNodes[i] = tmpLeftNodesArray[i - target_i];
+            }
+        }
     }
 
     public void showKeys(){
