@@ -12,10 +12,8 @@ public class Main {
         //int degree = keyboard.nextInt();
         int degree = 5;
         BPlusTree bPlusTree = new BPlusTree(degree);
-        bPlusTree.insert(1);
-        bPlusTree.insert(3);
-        bPlusTree.insert(5);
-        bPlusTree.insert(7);
+        //bPlusTree.insert(1, 11);
+
         bPlusTree.show();
 
         System.out.println("single key search 시작!");
