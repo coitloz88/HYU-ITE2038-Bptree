@@ -13,13 +13,13 @@ public class Main {
         int degree = 5;
         BPlusTree bPlusTree = new BPlusTree(degree);
         bPlusTree.insert(1);
-        bPlusTree.insert(2);
         bPlusTree.insert(3);
-        bPlusTree.insert(4);
+        bPlusTree.insert(5);
+        bPlusTree.insert(7);
         bPlusTree.show();
 
         System.out.println("single key search 시작!");
-        System.out.println(bPlusTree.singleKeySearch(2));
+        System.out.println(bPlusTree.singleKeySearch(8));
 
         keyboard.close();
 

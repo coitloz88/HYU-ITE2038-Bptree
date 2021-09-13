@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Node{
     /**
      * 0. leaf인지 아닌지
@@ -15,12 +17,12 @@ public class Node{
     private Node rightNode;
     private int[] values;
 
-    public Node(int numberOfKey, boolean isLeaf){
+    public Node(int degree, boolean isLeaf){
         leaf = isLeaf;
         currentNumberOfKeys = 0;
-        keys = new int[numberOfKey - 1];
-        leftNodes = new Node[numberOfKey - 1];
-        values = new int[numberOfKey - 1];
+        keys = new int[degree - 1];
+        leftNodes = new Node[degree - 1];
+        values = new int[degree - 1];
     }
 
     public boolean isLeaf() {
@@ -43,36 +45,36 @@ public class Node{
         return keys;
     }
 
-    public void setKeys(int[] keys) { this.keys = keys; }
+    public int getKey(int i) { return keys[i]; }
 
-    public Node getLeftNode(int i) {
-        return leftNodes[i];
-    }
+    public void setKey(int key, int i) { keys[i] = key; }
 
-    public void setLeftNode(Node leftNode, int i) {
-        leftNodes[i] = leftNode;
-    }
+    public Node getLeftNode(int i) { return leftNodes[i]; }
 
-    public Node getRightNode() {
-        return rightNode;
-    }
+    public void setLeftNode(Node leftNode, int i) { leftNodes[i] = leftNode; }
 
-    public void setRightNode(Node rightNode) {
-        this.rightNode = rightNode;
-    }
+    public Node getRightNode() { return rightNode; }
+
+    public void setRightNode(Node rightNode) { this.rightNode = rightNode; }
 
     public int getValue(int i) { return values[i]; }
 
-    public void setValue(int value, int i) {
-        values[i] = value;
-    }
+    public void setValue(int value, int i) { values[i] = value; }
 
     //TODO: leftNode, rightNode에 포인터 건네주는 함수 구현
 
     public void push_back(int index){
         values[currentNumberOfKeys] = index * 11;
-        keys[currentNumberOfKeys++] = index;
-        //TODO: 오름차순 정렬
+        keys[currentNumberOfKeys] = index;
+        Arrays.sort(keys, 0, currentNumberOfKeys++);
+    }
+
+    public void showKeys(){
+        for (int i = 0; i < currentNumberOfKeys; i++) {
+            if(i != 0) System.out.print(",");
+            System.out.print(keys[i]);
+        }
+        System.out.println();
     }
 
 }
