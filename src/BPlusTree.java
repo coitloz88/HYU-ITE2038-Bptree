@@ -6,12 +6,10 @@ public class BPlusTree {
      */
 
     private final int degree;
-    private final int totalNumberOfKeys;
     private Node root;
 
     public BPlusTree(int degree){
         this.degree = degree;
-        totalNumberOfKeys = degree - 1;
         root = new Node(degree, true);
     }
 
@@ -55,7 +53,7 @@ public class BPlusTree {
             else return "NOT FOUND";
     }
 
-    public Node split(Node superParentNode, int inputIndex){
+    public Node split(Node superParentNode, int inputIndex, int inputValue){
 
         /**
          * parentNode: key가 덜 찬 node이자 쪼갠 childNode에서 올라올 key를 받는 node
@@ -75,7 +73,7 @@ public class BPlusTree {
         else childNode = parentNode.getLeftNode(orderInParent);
         
         //child node 자르기
-        int divide_i = (int) (Math.ceil((double)degree / 2) - 1); //배열은 0부터 시작하므로 1더 빼줌, TODO: 안전하게 소수점 자르기
+        int divide_i = degree % 2 == 0 ? degree / 2 : (int) (Math.ceil((double)degree / 2) - 1); //배열은 0부터 시작하므로 1더 빼줌, TODO: 안전하게 소수점 자르기
 
         if(childNode.isLeaf()){
             //childNode가 leaf인 경우, Right child는 new Node(~~)로 동적 할당해준 뒤 값 수정할 것!
@@ -109,25 +107,39 @@ public class BPlusTree {
             int[] tmpValues = new int[childNode.getCurrentNumberOfKeys()];
             for (int i = 0; i < childNode.getCurrentNumberOfKeys(); i++) { tmpValues[i] = childNode.getValue(i); }
 */
+            int[] childNodeKeys = childNode.getKeys();
+            int orderInChild;
+            for (orderInChild = 0; orderInChild < childNode.getCurrentNumberOfKeys() && inputIndex > childNodeKeys[orderInChild]; orderInChild++) {
+                // 현재 노드가 가진 key의 값의 어느 범위에 들어가는지 확인해본다(i가 그만큼 증가)
+            }
+
+            if(orderInParent >= parentNode.getCurrentNumberOfKeys()){
+                parentNode.setLeftNode(childNode, orderInParent);
+                parentNode.setRightNode(rightChildNode);
+            }
+            parentNode.push_back(childNode.getKey(divide_i));
+            
             //rightChildNode 값 조정
-            rightChildNode.setCurrentNumberOfKeys(degree - divide_i + 1);
-            for (int i = divide_i; i < totalNumberOfKeys; i++) {
+            rightChildNode.setCurrentNumberOfKeys(degree - divide_i);
+            for (int i = divide_i; i < degree; i++) {
                 rightChildNode.setKey(childNode.getKey(i), i - divide_i);
                 rightChildNode.setValue(childNode.getValue(i), i - divide_i);
             }
             rightChildNode.setRightNode(childNode.getRightNode());
 
-            childNode.setCurrentNumberOfKeys(divide_i);
-            for (int i = divide_i; i < totalNumberOfKeys; i++) {
+            //leftChildNode 값 조정
+            for (int i = divide_i; i < degree; i++) {
                 childNode.setKey(0, i);
                 childNode.setValue(0, i);
             }
-            childNode.setCurrentNumberOfKeys(divide_i - 1);
+            childNode.setCurrentNumberOfKeys(divide_i);
             childNode.setRightNode(rightChildNode);
 
+            
             /**
              * 부모 노드의 orderInParent를 기준으로
              */
+            
 
         } else {
             //childNode가 leaf가 아닌 경우, Right child는 new Node(~~)로 동적 할당해준 뒤 값 수정할 것!
@@ -166,7 +178,7 @@ public class BPlusTree {
          */
         Node searchedLeafNode = singleKeySearchNode(inputIndex, false);
 
-        if(searchedLeafNode.getCurrentNumberOfKeys() < degree-1){
+        if(searchedLeafNode.getCurrentNumberOfKeys() < degree){
             searchedLeafNode.push_back(inputIndex);
         } else {
             //TODO: 쪼개는 insert 함수 구현
@@ -195,7 +207,7 @@ public class BPlusTree {
             Node superParentNode = null;
             Node searchTmpNode = root;
             while (!searchTmpNode.isLeaf()) {
-                if(searchTmpNode.getCurrentNumberOfKeys() < degree - 1) superParentNode = searchTmpNode; //가장 마지막으로 key가 덜 찬 parent node를 찾는다
+                if(searchTmpNode.getCurrentNumberOfKeys() < degree) superParentNode = searchTmpNode; //가장 마지막으로 key가 덜 찬 parent node를 찾는다
 
                 int[] tmpKeys = searchTmpNode.getKeys();
                 int i;
@@ -210,6 +222,8 @@ public class BPlusTree {
 
             if(superParentNode == null){
                 //root도 쪼개야 하는 경우
+                //1. root를 처음으로 쪼개는 경우
+                //2. 그냥 나머지가 다 꽉차서 root를 쪼개야하는 경우
             } /*else if (superParentNode == root){
                 //root에 노드 하나 더 추가하는 경우(경우 나눌 필요 있나?)
             } */else {

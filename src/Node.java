@@ -20,9 +20,9 @@ public class Node{
     public Node(int degree, boolean isLeaf){
         leaf = isLeaf;
         currentNumberOfKeys = 0;
-        keys = new int[degree - 1];
-        leftNodes = new Node[degree - 1];
-        values = new int[degree - 1];
+        keys = new int[degree];
+        leftNodes = new Node[degree];
+        values = new int[degree];
     }
 
     public boolean isLeaf() {
