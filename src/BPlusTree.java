@@ -19,19 +19,12 @@ public class BPlusTree {
         while (!tmpNode.isLeaf()) {
             if (showNodeKey) tmpNode.showKeys();
             // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
-            int[] tmpKeys = tmpNode.getKeys();
-            int i;
-            for (i = 0; i < tmpNode.getCurrentNumberOfKeys() && target > tmpKeys[i]; i++) {
-                // 현재 노드가 가진 key의 값의 어느 범위에 들어가는지 확인해본다(i가 그만큼 증가)
-            }
-
+            int i = tmpNode.findIndexOfKeyInKeyArray(target);
             if (i >= tmpNode.getCurrentNumberOfKeys()) tmpNode = tmpNode.getRightNode();
-            else if (target == tmpKeys[i]) tmpNode = tmpNode.getLeftNode(i + 1);
+            else if (target == tmpNode.getKey(i)) tmpNode = tmpNode.getLeftNode(i + 1);
             else tmpNode = tmpNode.getLeftNode(i);
         }
-
         return tmpNode;
-
     }
     
     public String singleKeySearch(int target){
@@ -45,11 +38,9 @@ public class BPlusTree {
             Node tmpNode = singleKeySearchNode(target, true);
             
             //leaf 도달
-            int[] tmpKeys = tmpNode.getKeys();
-            int i = 0;
-            while(i < tmpNode.getCurrentNumberOfKeys() - 1 && target > tmpKeys[i]){ i++; }
+        int i = tmpNode.findIndexOfKeyInKeyArray(target);
 
-            if(target == tmpKeys[i]) return String.valueOf(tmpNode.getValue(i));
+        if(i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i)) return String.valueOf(tmpNode.getValue(i));
             else return "NOT FOUND";
     }
 
@@ -58,8 +49,35 @@ public class BPlusTree {
         return "NOT FOUND";
     }
 
+    public Node findSuperParentNode(Node childLeafNode, int inputkey){
+        /**
+         * <함수개요>
+         *     삽입(혹은 삭제?)하려는 index와 해당 index가 있는 leafNode의 주소를 받는다.
+         *     쪼갤 수 있는 가장 최하단의 부모 노드를 찾는다.
+         *     - return값이 null일 경우: 
+         *       1) 모든 노드가 꽉찬 경우, 쪼갤 수 있는 노드 없음, split::newNodeMode = true
+         *       2) root를 처음으로 쪼개는 경우
+         *     - return값이 root일 경우: root를 쪼개야함(구분해야하나?)
+         *     - retur값이 internal node일 경우: split::newNodeMode = false, 평범하게 쪼개면 됨
+         * </함수개요>
+         */
+        
+        Node superParentNode = null;
+        Node searchTmpNode = root;
+        while (!searchTmpNode.isLeaf()) {
+            if (searchTmpNode.getCurrentNumberOfKeys() < degree)
+                superParentNode = searchTmpNode; //가장 마지막으로 key가 덜 찬 parent node를 찾는다
+
+            int i = searchTmpNode.findIndexOfKeyInKeyArray(inputkey);
+
+            if (i >= searchTmpNode.getCurrentNumberOfKeys()) searchTmpNode = searchTmpNode.getRightNode();
+            else searchTmpNode = searchTmpNode.getLeftNode(i);
+        }
+        return superParentNode;
+    };
+
     //split이 필요한 경우만 받음
-    public Node split(Node superParentNode, int inputIndex, int inputValue, boolean newMode){
+    public Node split(Node superParentNode, int inputkey, int inputValue, boolean newNodeMode){
         /**
          * <함수인자>
          *     1. superParentNode: 추가 key(&value)가 삽입 가능하면서 가장 아래인 노드
@@ -106,20 +124,23 @@ public class BPlusTree {
 
         Node parentNode = superParentNode;
         Node childNode;
+
+
+
         return parentNode; //삽입할 수 있는 node를 반환할때까지 loop를 돌면 while문안에 parentNode = childNode..어쩌고 하는게 마지막으로 한번더 실행이 되므로 parent 반환해야함
     }
 
-    public void insert(int inputIndex, int inputValue){ //중복 key는 들어오지 않는다
+    public void insert(int inputkey, int inputValue){ //중복 key는 들어오지 않는다
 
         /**
          * search?해서 알맞는 노드까지 감
          * 그 노드에 넣을 자리가 있으면 넣음
          * 넣을 자리가 없으면 쪼개기!
          */
-        Node searchedLeafNode = singleKeySearchNode(inputIndex, false);
+        Node searchedLeafNode = singleKeySearchNode(inputkey, false);
 
         if(searchedLeafNode.getCurrentNumberOfKeys() < degree){
-            searchedLeafNode.push_back(inputIndex, inputValue);
+            searchedLeafNode.push_back(inputkey, inputValue);
         }
 
         //linked list 생성시 올라간 애는 오른쪽으로 쪼개지는 노드에 붙음
@@ -142,37 +163,22 @@ public class BPlusTree {
          *     - 앗...근데 이렇게 superParentNode를 찾아도 해당 node에서 어디로 가야할지 모르니까ㅜ 안되네...
          * </구현개요>
          */
-/*
-        Node superParentNode = null;
-        Node searchTmpNode = root;
-        while (!searchTmpNode.isLeaf()) {
-            if (searchTmpNode.getCurrentNumberOfKeys() < degree)
-                superParentNode = searchTmpNode; //가장 마지막으로 key가 덜 찬 parent node를 찾는다
 
-            int[] tmpKeys = searchTmpNode.getKeys();
-            int i;
-            for (i = 0; i < searchTmpNode.getCurrentNumberOfKeys() - 1 && inputIndex > tmpKeys[i]; i++) {
-                // 현재 노드가 가진 key의 값의 어느 범위에 들어가는지 확인해본다(i가 그만큼 증가)
-            }
+        else {
+            Node superParentNode = findSuperParentNode(searchedLeafNode, inputkey);
 
-
-            if (i >= searchTmpNode.getCurrentNumberOfKeys()) searchTmpNode = searchTmpNode.getRightNode();
-            else searchTmpNode = searchTmpNode.getLeftNode(i);
-        }
-
-        if (superParentNode == null) {
-            //root도 쪼개야 하는 경우
-            //1. root를 처음으로 쪼개는 경우
-            //2. 그냥 나머지가 다 꽉차서 root를 쪼개야하는 경우
-        } else if (superParentNode == root){
+            if (superParentNode == null) {
+                //root도 쪼개야 하는 경우
+                //1. root를 처음으로 쪼개는 경우
+                //2. 그냥 나머지가 다 꽉차서 root를 쪼개야하는 경우
+            } else if (superParentNode == root) {
                 //root에 노드 하나 더 추가하는 경우(경우 나눌 필요 있나?)
-            }  else {
-            //internal node가 superParentNode인 경우
+            } else {
+                //internal node가 superParentNode인 경우
 
-            //TODO: split함수 구현
+                //TODO: split함수 구현
+            }
         }
-
-*/
 
     }
 

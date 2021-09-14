@@ -61,16 +61,22 @@ public class Node{
 
     public void setValue(int value, int i) { values[i] = value; }
 
+    //inputKey를 받으면 해당하는 key가 keys 배열의 몇번째 i에 위치하는지 반환하는 함수
+    public int findIndexOfKeyInKeyArray(int inputKey){
+        int index;
+        for (index = 0; index < currentNumberOfKeys && inputKey > keys[index]; index++) { }
+        return index;
+    }
+
     //leaf에 삽입시 key-value 오름차순 정렬 삽입, parent삽입시..코드참고
-    public void push_back(int index, int value){
+    public void push_back(int key, int value){
 
         if(currentNumberOfKeys >= keys.length){
             System.err.println("push_back() 오류: 키 개수 초과");
             return;
         }
 
-        int target_i; //[target_i]에 (index, value)가 들어간다.
-        for(target_i = 0; target_i < currentNumberOfKeys && index > keys[target_i]; target_i++){} //key를 오름차순으로 정렬하기 위함
+        int target_i = findIndexOfKeyInKeyArray(key); //[target_i]에 (index, value)가 들어간다. key를 오름차순으로 정렬하기 위함
 
         int[] tmpKeyArray = new int[currentNumberOfKeys - target_i];
         if(leaf) {
@@ -80,7 +86,7 @@ public class Node{
                 tmpKeyArray[i - target_i] = keys[i];
                 tmpValueArray[i - target_i] = values[i];
             }
-            keys[target_i] = index;
+            keys[target_i] = key;
             values[target_i] = value;
             ++currentNumberOfKeys;
             for (int i = target_i + 1; i < currentNumberOfKeys; i++) {
@@ -102,7 +108,7 @@ public class Node{
             //target_i에 key가 삽입된다.
             //target_i + 1에 새로운 노드가 연결된다(BPlusTree.java에서 처리)
             ++currentNumberOfKeys;
-            keys[target_i] = index;
+            keys[target_i] = key;
 
 
             if(target_i >= keys.length - 2){

@@ -21,7 +21,7 @@ public class Main {
         bPlusTree.show();
         System.out.println();
         System.out.println("single key search 시작!");
-        System.out.println(bPlusTree.singleKeySearch(4));
+        System.out.println(bPlusTree.singleKeySearch(2));
 
         keyboard.close();
 
