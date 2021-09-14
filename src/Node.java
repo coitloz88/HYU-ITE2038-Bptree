@@ -12,17 +12,17 @@ public class Node{
     private int currentNumberOfKeys; //배열 마지막 번호보다 1 크다.
     private int[] keys;
     private Node[] leftNodes;
-    private Node rightNode;
+    private Node parent;
     private int[] values;
 
-    public Node(int totalNumberOfKeys, boolean isLeaf){
+    public Node(int totalNumberOfKeys, boolean isLeaf, Node parent){
         leaf = isLeaf;
         currentNumberOfKeys = 0;
         keys = new int[totalNumberOfKeys];
-        leftNodes = new Node[totalNumberOfKeys];
-        for (int i = 0; i < totalNumberOfKeys; i++) leftNodes[i] = null;
+        leftNodes = new Node[totalNumberOfKeys + 1];
+        for (int i = 0; i < totalNumberOfKeys + 1; i++) leftNodes[i] = null;
         values = new int[totalNumberOfKeys];
-        rightNode = null;
+        this. parent = parent;
     }
 
     public boolean isLeaf() {
@@ -49,13 +49,13 @@ public class Node{
 
     public void setLeftNode(Node leftNode, int i) { leftNodes[i] = leftNode; }
 
-    public Node getRightNode() { return rightNode; }
-
-    public void setRightNode(Node rightNode) { this.rightNode = rightNode; }
-
     public int getValue(int i) { return values[i]; }
 
     public void setValue(int value, int i) { values[i] = value; }
+
+    public Node getParent() { return parent; }
+
+    public void setParent(Node parent) { this.parent = parent; }
 
     //input보다 작거나 같은 key index를 반환하는 함수
     public int findIndexOfKeyInKeyArray(int input){

@@ -12,7 +12,7 @@ public class BPlusTree {
     public BPlusTree(int degree){
         this.degree = degree;
         this.totalNumberOfKeys = degree - 1;
-        root = new Node(totalNumberOfKeys, true);
+        root = new Node(totalNumberOfKeys, true, null);
     }
 
     public Node singleKeySearchNode(int target, boolean showNodeKey){
@@ -22,8 +22,7 @@ public class BPlusTree {
             if (showNodeKey) tmpNode.showKeys();
             // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
             int i = tmpNode.findIndexOfKeyInKeyArray(target);
-            if (i >= tmpNode.getCurrentNumberOfKeys()) tmpNode = tmpNode.getRightNode();
-            else if (target == tmpNode.getKey(i)) tmpNode = tmpNode.getLeftNode(i + 1);
+            if (target == tmpNode.getKey(i)) tmpNode = tmpNode.getLeftNode(i + 1);
             else tmpNode = tmpNode.getLeftNode(i);
         }
         return tmpNode;
@@ -52,46 +51,18 @@ public class BPlusTree {
         return "NOT FOUND";
     }
 
-    public Node findParentNode(Node topNode, Node childNode){
-        Node parentNode;
 
-        //해당하는 자식이 있으면
-        for (int i = 0; i < topNode.getCurrentNumberOfKeys() + 1; i++) {
-            if (i < topNode.getCurrentNumberOfKeys()){
-                if(topNode.getLeftNode(i) == childNode){
-                    parentNode = topNode;
-                    return parentNode;
-                } else {
-                    parentNode = findParentNode(topNode.getLeftNode(i), childNode);
-                }
-            }
-            else if (i == topNode.getCurrentNumberOfKeys()) {
-                if(topNode.getRightNode() == childNode) {
-                    parentNode = topNode;
-                    return parentNode;
-                } else {
-                    parentNode = findParentNode(topNode.getRightNode(), childNode);
-                }
-            }
-            if(parentNode != null) return parentNode;
-
-        }
-        return parentNode;
-    }
 
     public void insert(int inputkey, int inputValue){
         //중복 key는 들어오지 않는다
         //TODO: delete로 싹다 지워서 root가 null이 된 경우(예외처리)
 
-        /**
-         * case1. keys가 다차지 않은 leafnode에 insert하는 경우
-         * case2. keys가 다차서 부모 노드를 쪼개야 하는 경우
-         *  2-1. leaf->parent(노드를 남겨두고 올려야함)
-         *  2-2. childInternal->parentInternal(노드를 남겨두지 않고 올리면 됨)
-         *      parentNode를 찾아주는 함수가 필요함!
-         *      2-2-2. parentInternalNode가 root인 경우(root를 쪼개서 새로운 root가 만들어짐)
-         *      2-2-3. parentInternalNode가 root가 아닌 경우
-         */
+        Node searchedLeafNode = singleKeySearchNode(inputkey, false);
+
+        if(searchedLeafNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
+            searchedLeafNode.push_back(inputkey, inputValue);
+        }
+
     }
 
     public void internalInsert(Node internalNode, Node childNode, int inputKey){
