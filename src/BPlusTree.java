@@ -22,8 +22,8 @@ public class BPlusTree {
             if (showNodeKey) tmpNode.showKeys();
             // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
             int i = tmpNode.findIndexOfKeyInKeyArray(target);
-            if (target == tmpNode.getKey(i)) tmpNode = tmpNode.getLeftNode(i + 1);
-            else tmpNode = tmpNode.getLeftNode(i);
+            if (target == tmpNode.getKey(i)) tmpNode = tmpNode.getChildNode(i + 1);
+            else tmpNode = tmpNode.getChildNode(i);
         }
         return tmpNode;
     }
@@ -51,22 +51,91 @@ public class BPlusTree {
         return "NOT FOUND";
     }
 
-
-
-    public void insert(int inputkey, int inputValue){
+    public void insert(int inputKey, int inputValue){
         //중복 key는 들어오지 않는다
         //TODO: delete로 싹다 지워서 root가 null이 된 경우(예외처리)
 
-        Node searchedLeafNode = singleKeySearchNode(inputkey, false);
+        Node targetNode = singleKeySearchNode(inputKey, false);
 
-        if(searchedLeafNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
-            searchedLeafNode.push_back(inputkey, inputValue);
+        if(targetNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
+            targetNode.push_back(inputKey, inputValue);
+        } else {
+            //split
+
+            int split_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double)degree / 2) - 1; //longTmpNode의 [split_i]번째를 올림
+
+            /**
+             * 1. (totalNumberOfKeys + 1)의 Node를 하나 생성, targetNode의 '값'만 복사해줌 (주소 X) ->virtualNode
+             *      leftNode랑 .. 기타등등
+             * 2. inputKey, inputValue 쌍을 넣어줌 push_back해줌
+             * 3. rightChildNode(new로 동적할당) -> longTmpNode의 [split_i] 이후의 값을 대입
+             * 4. targetNode의 rightNode가 rightChildNode를 가리키게 함 #targetNode가 root인지 확인!!(5와 예외처리)
+             * 5. virutalNode의 keys[split_i]를 parent node에 internalNodeInsert()함
+             */
+
+            Node virtualNode = new Node(totalNumberOfKeys + 1, true, null);
+
+            //복사 및 split
+            for (int i = 0; i < totalNumberOfKeys; i++) {
+                virtualNode.push_back(targetNode.getKey(i), targetNode.getValue(i));
+            }
+            virtualNode.push_back(inputKey, inputValue); //하나 남는 자리에 inputKey와 inputValue 넣어줌
+
+            Node rightNode = new Node(totalNumberOfKeys, true, targetNode.getParent());
+
+            for (int i = split_i; i < totalNumberOfKeys + 1; i++) {
+                rightNode.push_back(virtualNode.getKey(i), virtualNode.getValue(i));
+                targetNode.setKey(0, i - 1); targetNode.setValue(0, i - 1);
+            } targetNode.setCurrentNumberOfKeys(split_i);
+
+            rightNode.setChildNode(targetNode.getChildNode(totalNumberOfKeys), totalNumberOfKeys);
+            targetNode.setChildNode(rightNode, totalNumberOfKeys);
+
+            //parent Node로 올려주기
+            if(targetNode == root){
+                //TODO: root인 경우 새로운 root를 파고 그 root의 좌우를 targetNode, rightNode로 설정해주고 각 노드의 부모를 새로운 root로 한다
+            } else {
+                internalNodeInsert(targetNode.getParent(), rightNode, virtualNode.getKey(split_i));
+            }
         }
 
     }
 
-    public void internalInsert(Node internalNode, Node childNode, int inputKey){
-        //leafNode 위의 Node도 다차서 또 쪼개야할때 재귀적으로 호출하는 함수
+    //leafNode 위의 Node도 다차서 parent node를 또 쪼개야할때 재귀적으로 호출하는 함수
+    public void internalNodeInsert(Node parentNode, Node childNode, int inputKey){
+
+        if(parentNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
+            parentNode.push_back(inputKey, 0);
+            parentNode.setChildNode(childNode, parentNode.findIndexOfKeyInKeyArray(inputKey)); //TODO:순서 맞는지 (제정신일때) 확인!
+            return;
+        } else {
+            //parent도 자리가 없다.. 쪼개줌
+            int split_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double)degree / 2) - 1;
+
+            //virtualNode에 기존 parentNode의 값 복사
+            Node virtualNode = new Node(totalNumberOfKeys + 1, false, null);
+            for (int i = 0; i < totalNumberOfKeys; i++) {
+                virtualNode.push_back(parentNode.getKey(i), 0); //leafNode가 아니므로 value는 input되지 않는다.
+            }
+            virtualNode.push_back(inputKey, 0); //하나 남는 자리에 inputKey와 inputValue 넣어줌
+
+            Node rightNode = new Node(totalNumberOfKeys, false, parentNode.getParent()); //parent노드 오른쪽으로 쪼개질 노드(parent의 parent에 붙음)
+            for (int i = split_i; i < totalNumberOfKeys + 1; i++) {
+                rightNode.push_back(virtualNode.getKey(i), virtualNode.getValue(i));
+                parentNode.setKey(0, i - 1);
+            } parentNode.setCurrentNumberOfKeys(split_i);
+
+            parentNode.setChildNode(childNode, parentNode.findIndexOfKeyInKeyArray(inputKey));
+
+            //parent Node로 올려주기
+            if(parentNode == root){
+                //TODO: root인 경우 새로운 root를 파고 그 root의 좌우를 parentNode, rightNode로 설정해주고 각 노드의 부모를 새로운 root로 한다
+                return;
+            } else {
+                internalNodeInsert(parentNode.getParent(), rightNode, virtualNode.getKey(split_i));
+            }
+        }
+
     }
 
     public void delete(){

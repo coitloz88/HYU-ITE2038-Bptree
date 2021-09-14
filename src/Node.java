@@ -11,18 +11,21 @@ public class Node{
     private boolean leaf; //root혹은 internal일때는 false,leaf일때는 true
     private int currentNumberOfKeys; //배열 마지막 번호보다 1 크다.
     private int[] keys;
-    private Node[] leftNodes;
-    private Node parent;
     private int[] values;
+    private Node[] childNodes;
+    private Node parent;
 
     public Node(int totalNumberOfKeys, boolean isLeaf, Node parent){
         leaf = isLeaf;
+
         currentNumberOfKeys = 0;
+
         keys = new int[totalNumberOfKeys];
-        leftNodes = new Node[totalNumberOfKeys + 1];
-        for (int i = 0; i < totalNumberOfKeys + 1; i++) leftNodes[i] = null;
         values = new int[totalNumberOfKeys];
-        this. parent = parent;
+
+        childNodes = new Node[totalNumberOfKeys + 1];
+        for (int i = 0; i < totalNumberOfKeys + 1; i++) childNodes[i] = null;
+        this.parent = parent;
     }
 
     public boolean isLeaf() {
@@ -45,9 +48,9 @@ public class Node{
 
     public void setKey(int key, int i) { keys[i] = key; }
 
-    public Node getLeftNode(int i) { return leftNodes[i]; }
+    public Node getChildNode(int i) { return childNodes[i]; }
 
-    public void setLeftNode(Node leftNode, int i) { leftNodes[i] = leftNode; }
+    public void setChildNode(Node leftNode, int i) { childNodes[i] = leftNode; }
 
     public int getValue(int i) { return values[i]; }
 
@@ -100,7 +103,7 @@ public class Node{
             Node[] tmpLeftNodesArray = new Node[currentNumberOfKeys - target_i];
             for (int i = target_i; i < currentNumberOfKeys; i++) {
                 tmpKeyArray[i - target_i] = keys[i];
-                tmpLeftNodesArray[i - target_i] = leftNodes[i];
+                tmpLeftNodesArray[i - target_i] = childNodes[i];
             }
             //target_i에 key가 삽입된다.
             //target_i + 1에 새로운 노드가 연결된다(BPlusTree.java에서 처리)
@@ -115,18 +118,16 @@ public class Node{
                 }
             } else {
                 //leftNodes 밀림 있음
-                leftNodes[target_i] = null; //split 후 newRightChildNode가 들어올 곳
+                childNodes[target_i] = null; //split 후 newRightChildNode가 들어올 곳
                 keys[++target_i] = tmpKeyArray[0];
                 keys[++target_i] = tmpKeyArray[1];
 
                 for (int i = target_i; i < currentNumberOfKeys; i++) {
                     keys[i] = tmpKeyArray[i - target_i];
-                    leftNodes[i] = tmpLeftNodesArray[i - target_i];
+                    childNodes[i] = tmpLeftNodesArray[i - target_i];
                 }
             }
-
         }
-
     }
 
     public void showKeys(){
