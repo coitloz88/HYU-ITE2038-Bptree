@@ -15,13 +15,13 @@ public class Node{
     private Node rightNode;
     private int[] values;
 
-    public Node(int degree, boolean isLeaf){
+    public Node(int totalNumberOfKeys, boolean isLeaf){
         leaf = isLeaf;
         currentNumberOfKeys = 0;
-        keys = new int[degree];
-        leftNodes = new Node[degree];
-        for (int i = 0; i < degree; i++) leftNodes[i] = null;
-        values = new int[degree];
+        keys = new int[totalNumberOfKeys];
+        leftNodes = new Node[totalNumberOfKeys];
+        for (int i = 0; i < totalNumberOfKeys; i++) leftNodes[i] = null;
+        values = new int[totalNumberOfKeys];
         rightNode = null;
     }
 
@@ -41,10 +41,6 @@ public class Node{
         this.currentNumberOfKeys = currentNumberOfKeys;
     }
 
-    public int[] getKeys() {
-        return keys;
-    }
-
     public int getKey(int i) { return keys[i]; }
 
     public void setKey(int key, int i) { keys[i] = key; }
@@ -61,10 +57,11 @@ public class Node{
 
     public void setValue(int value, int i) { values[i] = value; }
 
-    //inputKey를 받으면 해당하는 key가 keys 배열의 몇번째 i에 위치하는지 반환하는 함수
-    public int findIndexOfKeyInKeyArray(int inputKey){
+    //input보다 작거나 같은 key index를 반환하는 함수
+    public int findIndexOfKeyInKeyArray(int input){
+        //주의: search를 하는게 아니라 그냥 순서만 찾는 경우 음... 암튼 주의
         int index;
-        for (index = 0; index < currentNumberOfKeys && inputKey > keys[index]; index++) { }
+        for (index = 0; index < currentNumberOfKeys && input > keys[index]; index++) { } //input이 모든 key값보다 크면 keys 크기를 1 초과하는 값을 가짐
         return index;
     }
 

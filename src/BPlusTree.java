@@ -6,11 +6,13 @@ public class BPlusTree {
      */
 
     private final int degree;
+    private final int totalNumberOfKeys;
     private Node root;
 
     public BPlusTree(int degree){
         this.degree = degree;
-        root = new Node(degree, true);
+        this.totalNumberOfKeys = degree - 1;
+        root = new Node(totalNumberOfKeys, true);
     }
 
     public Node singleKeySearchNode(int target, boolean showNodeKey){
@@ -35,13 +37,14 @@ public class BPlusTree {
          *
          * 찾으면 해당하는 value 반환
          */
-            Node tmpNode = singleKeySearchNode(target, true);
-            
-            //leaf 도달
+        Node tmpNode = singleKeySearchNode(target, true);
+
+        //leaf 도달
         int i = tmpNode.findIndexOfKeyInKeyArray(target);
 
-        if(i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i)) return String.valueOf(tmpNode.getValue(i));
-            else return "NOT FOUND";
+        if (i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i))
+            return String.valueOf(tmpNode.getValue(i));
+        else return "NOT FOUND";
     }
 
     public String rangeSearch(){
@@ -51,6 +54,8 @@ public class BPlusTree {
 
     public Node findSuperParentNode(Node childLeafNode, int inputkey){
         /**
+         * 주의. inputKey는 현재 B+tree 내부에 없는 새로운 key값임(findIndexOfKeyInKeyArray를 정상적으로 사용하기 위함)
+         * 
          * <함수개요>
          *     삽입(혹은 삭제?)하려는 index와 해당 index가 있는 leafNode의 주소를 받는다.
          *     쪼갤 수 있는 가장 최하단의 부모 노드를 찾는다.
@@ -61,11 +66,11 @@ public class BPlusTree {
          *     - retur값이 internal node일 경우: split::newNodeMode = false, 평범하게 쪼개면 됨
          * </함수개요>
          */
-        
+
         Node superParentNode = null;
         Node searchTmpNode = root;
         while (!searchTmpNode.isLeaf()) {
-            if (searchTmpNode.getCurrentNumberOfKeys() < degree)
+            if (searchTmpNode.getCurrentNumberOfKeys() < totalNumberOfKeys)
                 superParentNode = searchTmpNode; //가장 마지막으로 key가 덜 찬 parent node를 찾는다
 
             int i = searchTmpNode.findIndexOfKeyInKeyArray(inputkey);
@@ -101,6 +106,7 @@ public class BPlusTree {
          *     4. childNode가 leaf인지 검사
          *      4-1.leaf가 아닐때
          *          1) inputIndex를 끼워넣으려면 child의 몇번째에 가면 되는지 미리 조사한다(orderInChild).
+         *          2) rightChildNode를 동적할당해서 parent의 [orderInParent + 1]에 넣어준다.
          *          2) childNode의 [divide_i]번째에 해당하는 정보(key, leftNode 혹은 rightNode)를 parent로 push_back. 이때 value는 주지 않음
          *             이때, 끼워넣은 leftNode 혹은 rightNode...등은 직접 조정해야한다. push_back함수 참조
          *          3) (rightChild가 우선!) child를 뒤가 짤린 왼쪽용 childNode(뒤의 정보를 초기화)와 rightChildNode(new Node로 새롭게 동적할당)로 나눠준다.
@@ -119,19 +125,36 @@ public class BPlusTree {
          *     아.. 아니면 Node를 반환하는 함수로.. <<이걸로 가자! delete에도 써먹어야할 것 같으니
          *     parentNode 아래의 child(index를 포함할 가능성이 높은)Node를 쪼개서 parent에 올려주는 역할... 그러고 해당 child(index에 가까운)Node를 반환
          *     child가 leaf인지 검사해서 leaf일때까지 쪼개주는 함수로...? 그리고 그렇게 여유가 생긴 childNode를 반환하면 이제 여유있는 node에 push_back만 하면 되는상황
+         *
+         *     음 여유가 생긴 leaf노드를 반환하면 insert 함수에서 해당 leaf노드에 끼워넣을듯? 어차피 새로운 key-value는 leaf에만 들가니까
          * </함수개요>
          */
+        if (newNodeMode) {
+            return null; //TODO: newNodeMode작성
+        } else {
+            Node parentNode = superParentNode;
+            Node childNode;
 
-        Node parentNode = superParentNode;
-        Node childNode;
+            int orderInParent = parentNode.findIndexOfKeyInKeyArray(inputkey);
+            if (orderInParent >= parentNode.getCurrentNumberOfKeys()) childNode = parentNode.getRightNode();
+            else childNode = parentNode.getLeftNode(orderInParent);
+            int orderInChild = childNode.findIndexOfKeyInKeyArray(inputkey);
+            int divide_i = degree % 2 == 0 ? degree / 2 : (int) (Math.ceil((double) degree / 2) - 1); //배열은 0부터 시작하므로 1더 빼줌, TODO: 안전하게 소수점 자르기            }
 
+            while(!childNode.isLeaf()) {
 
-
-        return parentNode; //삽입할 수 있는 node를 반환할때까지 loop를 돌면 while문안에 parentNode = childNode..어쩌고 하는게 마지막으로 한번더 실행이 되므로 parent 반환해야함
+            }
+            /*
+            loop를 나옴
+            위에 있는 노드 좌좌작 다 쪼개서 parent는 non-leaf, child는 leaf인 경우(마지막)
+             */
+            
+            return parentNode;        //삽입할 수 있는 node를 반환할때까지 loop를 돌면 while문안에 parentNode = childNode..어쩌고 하는게 마지막으로 한번더 실행이 되므로 parent 반환해야함
+        }
     }
 
     public void insert(int inputkey, int inputValue){ //중복 key는 들어오지 않는다
-
+        //TODO: delete로 싹다 지워서 root가 null이 된 경우
         /**
          * search?해서 알맞는 노드까지 감
          * 그 노드에 넣을 자리가 있으면 넣음
@@ -139,7 +162,7 @@ public class BPlusTree {
          */
         Node searchedLeafNode = singleKeySearchNode(inputkey, false);
 
-        if(searchedLeafNode.getCurrentNumberOfKeys() < degree){
+        if(searchedLeafNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
             searchedLeafNode.push_back(inputkey, inputValue);
         }
 
