@@ -16,12 +16,21 @@ public class Main {
         bPlusTree.insert(4, 44);
         bPlusTree.insert(2, 22);
         bPlusTree.insert(1, 11);
-        //bPlusTree.insert(5, 55);
+
+        System.out.println();
+        System.out.println("Node split!");
+        System.out.println();
+        bPlusTree.insert(5, 55);
+        //bPlusTree.insert(7, 77);
+        //bPlusTree.insert(6, 66);
+        //bPlusTree.insert(9, 99);
+        bPlusTree.insert(8, 88);
+        bPlusTree.insert(10, 110);
 
         bPlusTree.show();
         System.out.println();
         System.out.println("single key search 시작!");
-        System.out.println(bPlusTree.singleKeySearch(5));
+        System.out.println(bPlusTree.singleKeySearch(8));
 
         keyboard.close();
 

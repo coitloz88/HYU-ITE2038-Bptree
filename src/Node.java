@@ -60,7 +60,7 @@ public class Node{
 
     public void setParent(Node parent) { this.parent = parent; }
 
-    //input보다 작거나 같은 key index를 반환하는 함수
+    //input이 삽입되면 되는 [index], 혹은 input이 위치한 [index] 반환
     public int findIndexOfKeyInKeyArray(int input){
         //주의: search를 하는게 아니라 그냥 순서만 찾는 경우 음... 암튼 주의
         int index;
@@ -93,39 +93,27 @@ public class Node{
                 keys[i] = tmpKeyArray[i - target_i - 1];
                 values[i] = tmpValueArray[i - target_i - 1];
             }
-        } else {
+        } else { //TODO: 이거 다시 확인해보기!!
             //leaf가 아닌 경우, keys와 leftnodes가 유효함. keys와 leftnodes는 1:1로 대응되지 않음(leftnodes는 듬성듬성 존재)
             //insert나 delete할때 노드를 쪼개고 부모에 넣는 경우를 위해 사용
             //leftnode[-]가 null인 경우 null로, 주소를 가지는 경우는 주소를 저장해줌
 
             //쪼개기 할때, rightChild가 새로 생긴다고 가정
             
-            Node[] tmpLeftNodesArray = new Node[currentNumberOfKeys - target_i];
+            Node[] tmpLeftNodesArray = new Node[currentNumberOfKeys - target_i + 1];
             for (int i = target_i; i < currentNumberOfKeys; i++) {
                 tmpKeyArray[i - target_i] = keys[i];
                 tmpLeftNodesArray[i - target_i] = childNodes[i];
-            }
+            } tmpLeftNodesArray[currentNumberOfKeys - target_i] = childNodes[currentNumberOfKeys];
+
             //target_i에 key가 삽입된다.
-            //target_i + 1에 새로운 노드가 연결된다(BPlusTree.java에서 처리)
-            ++currentNumberOfKeys;
+            //[target_i + 1]에는 새로운 노드가 연결된다(BPlusTree.java에서 처리)
             keys[target_i] = key;
-
-
-            if(target_i >= keys.length - 2){
-                //leftNodes 밀림 없음
-                for (int i = target_i; i < currentNumberOfKeys; i++) {
-                    tmpKeyArray[i - target_i] = keys[i];
-                }
-            } else {
-                //leftNodes 밀림 있음
-                childNodes[target_i] = null; //split 후 newRightChildNode가 들어올 곳
-                keys[++target_i] = tmpKeyArray[0];
-                keys[++target_i] = tmpKeyArray[1];
-
-                for (int i = target_i; i < currentNumberOfKeys; i++) {
-                    keys[i] = tmpKeyArray[i - target_i];
-                    childNodes[i] = tmpLeftNodesArray[i - target_i];
-                }
+            childNodes[target_i + 1] = null;
+            ++currentNumberOfKeys;
+            for (int i = target_i + 1; i < currentNumberOfKeys; i++) {
+                keys[i] = tmpKeyArray[i - target_i - 1];
+                childNodes[i] = tmpLeftNodesArray[i - target_i];
             }
         }
     }
