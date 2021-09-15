@@ -118,7 +118,7 @@ public class Node{
         }
     }
 
-    public void showKeys(){
+    public void showKeysInLine(){
         for (int i = 0; i < currentNumberOfKeys; i++) {
             if(i != 0) System.out.print(",");
             System.out.print(keys[i]);
@@ -126,5 +126,22 @@ public class Node{
         System.out.println();
     }
 
+    public void showKeys(){
+        System.out.print("\n@@@ show keys @@@ ");
+        for (int i = 0; i < currentNumberOfKeys; i++) {
+            if(i != 0) System.out.print(",");
+            System.out.print(keys[i]);
+        }
+        System.out.println(" @@@@@@");
+        System.out.print("@@@ show parentNode keys @@@ ");
+        if(parent == null){
+            System.out.println("parent is null! @@");
+            System.out.println("*\n");
+        }
+        else parent.showKeys();
+    }
+
 
 }
+
+

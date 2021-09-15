@@ -14,7 +14,7 @@ public class Main {
         int degree = 5; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
-        int totalNumber = 45;
+        int totalNumber = 50;
 
         boolean[] exist = new boolean[totalNumber];
         for (int i = 0; i < totalNumber; i++) {
@@ -40,6 +40,7 @@ public class Main {
 
         System.out.println("\n# linked list 연결 확인 #");
         bPlusTree.showAllKeys();
+        bPlusTree.showAllLeafNodes();
         keyboard.close();
 
     }
