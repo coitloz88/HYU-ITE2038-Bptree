@@ -14,7 +14,7 @@ public class Main {
         int degree = 34; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
-        int totalNumber = 50000;
+        int totalNumber = 100;
 
         boolean[] exist = new boolean[totalNumber];
         for (int i = 0; i < totalNumber; i++) {
@@ -41,6 +41,8 @@ public class Main {
         int findNumber = rd.nextInt(totalNumber);
         System.out.println(bPlusTree.singleKeySearch(findNumber));
 
+        System.out.println("\n*\nRange Search 시작!");
+        System.out.println(bPlusTree.rangeSearch(0, 0));
 
         keyboard.close();
 
