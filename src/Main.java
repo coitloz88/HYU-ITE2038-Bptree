@@ -11,10 +11,10 @@ public class Main {
          */
         Scanner keyboard = new Scanner(System.in);
         //int degree = keyboard.nextInt();
-        int degree = 5; //child(가지) 개수
+        int degree = 15; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
-        int totalNumber = 50;
+        int totalNumber = 500;
 
         boolean[] exist = new boolean[totalNumber];
         for (int i = 0; i < totalNumber; i++) {
@@ -34,13 +34,14 @@ public class Main {
 
         System.out.println();
 
-        System.out.println("single key search 시작!");
+        System.out.println("\n# linked list 연결 확인 #");
+        bPlusTree.showAllLeafKeys();
+
+        System.out.println("\n*\nsingle key search 시작!");
         int findNumber = rd.nextInt(totalNumber);
         System.out.println(bPlusTree.singleKeySearch(findNumber));
 
-        System.out.println("\n# linked list 연결 확인 #");
-        bPlusTree.showAllKeys();
-        bPlusTree.showAllLeafNodes();
+
         keyboard.close();
 
     }

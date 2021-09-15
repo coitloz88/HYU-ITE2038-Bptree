@@ -18,8 +18,7 @@ public class BPlusTree {
     public Node singleKeySearchNode(int target, boolean showNodeKey){
         Node tmpNode = root;
         while (!tmpNode.isLeaf()) {
-            System.out.print("search의 loop안 & show tmpNode ");
-            /*if (showNodeKey)*/ tmpNode.showKeys();
+            if (showNodeKey) tmpNode.showKeys();
 
             // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
             int i = tmpNode.findIndexOfKeyInKeyArray(target);
@@ -41,10 +40,6 @@ public class BPlusTree {
         if(root.getCurrentNumberOfKeys() == 0) return "root is empty";
         Node tmpNode = singleKeySearchNode(target, true);
 
-        System.out.print("마지막으로 찾은 node의 key배열 값들: ");
-        tmpNode.showKeys();
-        System.out.println();
-
         //leaf 도달
         int i = tmpNode.findIndexOfKeyInKeyArray(target);
 
@@ -61,13 +56,10 @@ public class BPlusTree {
     public void insert(int inputKey, int inputValue){
         //중복 key는 들어오지 않는다
         //TODO: delete로 싹다 지워서 root가 빈 경우(예외처리)?
-        System.out.println("\n# insert: " + inputKey);
         Node targetNode = singleKeySearchNode(inputKey, false); //해당하는 key가 들어갈 leaf Node를 찾아준다
 
         if(targetNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
-            System.out.println("평범하게 leafNode에 push_back()");
             targetNode.push_back(inputKey, inputValue);
-            targetNode.showKeys();
         } else {
             //split
             int split_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double)degree / 2) - 1; //longTmpNode의 [split_i]번째를 올림
@@ -104,9 +96,6 @@ public class BPlusTree {
             rightNode.setChildNode(virtualNode.getChildNode(0), 0);
             targetNode.setChildNode(rightNode, 0);
             //분할 완료
-            System.out.println("leaf Node 분할 완료!");
-            System.out.print("** 분할한 leftNode:"); targetNode.showKeys();
-            System.out.print("** 분할한 rightNode:"); rightNode.showKeys();
 
             //parent Node로 올려주기
             if(targetNode == root){
@@ -117,10 +106,7 @@ public class BPlusTree {
                 newRoot.setChildNode(targetNode, 0); newRoot.setChildNode(rightNode, 1);
                 targetNode.setParent(newRoot); rightNode.setParent(newRoot);
                 root = newRoot;
-                System.out.println("첫 root쪼개기! leaf node 쪼개기로 new root 생성");
-                System.out.print("new root: "); root.showKeysInLine();
-
-            } else {
+               } else {
                 internalNodeInsert(targetNode.getParent(), rightNode, virtualNode.getKey(split_i));
             }
         }
@@ -128,17 +114,12 @@ public class BPlusTree {
 
     //leafNode 위의 Node도 다차서 parent node를 또 쪼개야할때 재귀적으로 호출하는 함수
     public void internalNodeInsert(Node parentNode, Node childNode, int inputKey){
-        System.out.println("\n# internal Node에 insert, 올라와서 부모에 삽입될 key: " + inputKey);
         if(parentNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
             parentNode.push_back(inputKey, 0);
 
             int num = parentNode.findIndexOfKeyInKeyArray(inputKey);
             num = num >= parentNode.getCurrentNumberOfKeys() ? num - 1: num;
             parentNode.setChildNode(childNode, num + 1); //TODO:순서 맞는지 (제정신일때) 확인!
-
-            System.out.print("단순삽입(parent에 자리남음):: parentNode? "); parentNode.showKeys();
-            System.out.print("\n  parent의 leftChildNode? "); parentNode.getChildNode(num).showKeys();
-            System.out.print("\n  parent의 rightChildNode? "); parentNode.getChildNode(num + 1).showKeys();
 
             return;
         } else {
@@ -170,25 +151,14 @@ public class BPlusTree {
             for (int i = split_i + 1; i < totalNumberOfKeys + 1; i++) {
                 //rightNode에 virtualNode[split_i + 1] 부터 key랑 node 복사(leaf가 아님!)
                 //parentNode의 [split_i]부터 key랑 node 초기화
-                virtualNode.getChildNode(i).setParent(rightNode);
                 rightNode.setKey(virtualNode.getKey(i), i - split_i - 1);
                 rightNode.setChildNode(virtualNode.getChildNode(i) , i - split_i - 1);
             } rightNode.setChildNode(virtualNode.getChildNode(totalNumberOfKeys + 1), totalNumberOfKeys - split_i);
             rightNode.setCurrentNumberOfKeys(totalNumberOfKeys - split_i);
 
-            for (int i = 0; i <= parentNode.getCurrentNumberOfKeys(); i++) {
-                if(parentNode.getChildNode(i) != null) parentNode.getChildNode(i).setParent(parentNode);
-            }
             for (int i = 0; i <= rightNode.getCurrentNumberOfKeys(); i++) {
                 if(rightNode.getChildNode(i) != null) rightNode.getChildNode(i).setParent(rightNode);
             }
-
-            System.out.println("** internal parent또 쪼개줌!");
-            System.out.print("깨준 왼쪽 Node "); parentNode.showKeys();
-            System.out.print("\n깨준 오른쪽 Node - 그냥검사"); rightNode.showKeys();
-            System.out.print(" 부모로써의 rightNode검사"); rightNode.getChildNode(0).getParent().showKeys();
-
-
             //parent Node로 올려주기
             if(parentNode == root){
                 //TODO: root인 경우 새로운 root를 파고 그 root의 좌우를 parentNode, rightNode로 설정해주고 각 노드의 부모를 새로운 root로 한다
@@ -198,10 +168,6 @@ public class BPlusTree {
                 newRoot.setChildNode(parentNode, 0); newRoot.setChildNode(rightNode, 1);
                 parentNode.setParent(newRoot); rightNode.setParent(newRoot);
                 root = newRoot;
-
-                System.out.println("internal node 쪼개기로 new root 생성");
-                System.out.print("new root: "); root.showKeysInLine();
-
                 return;
             } else {
                 internalNodeInsert(parentNode.getParent(), rightNode, virtualNode.getKey(split_i));
@@ -214,7 +180,7 @@ public class BPlusTree {
         //TODO: delete 함수 구현
     }
 
-    public void showAllKeys(){
+    public void showAllLeafKeys(){
         Node tmpNode = singleKeySearchNode(0, false);
         while(tmpNode != null){
             tmpNode.showKeys();
@@ -222,12 +188,5 @@ public class BPlusTree {
         }
     }
 
-    public void showAllLeafNodes(){
-        Node tmpNode = singleKeySearchNode(0, false);
-        while(tmpNode != null){
-            tmpNode.showKeysInLine();
-            tmpNode = tmpNode.getChildNode(0);
-        }
-    }
 
 }
