@@ -48,9 +48,33 @@ public class BPlusTree {
         else return "NOT FOUND";
     }
 
-    public String rangeSearch(){
-        //TODO: rangeSearch 함수 구현
-        return "NOT FOUND";
+    public String rangeSearch(int startTarget, int endTarget) {
+        Node startNode = singleKeySearchNode(startTarget, false);
+        Node endNode = singleKeySearchNode(endTarget, false);
+        int startNode_i = startNode.findIndexOfKeyInKeyArray(startTarget);
+
+        if (startNode_i >= startNode.getCurrentNumberOfKeys()) {
+            if (startNode == endNode) return "NOT FOUND";
+            else {
+                startNode = startNode.getChildNode(0);
+                startNode_i = 0;
+            }
+        } else if(startNode.getKey(startNode_i) > endTarget){
+            return "NOT FOUND";
+        }
+
+        while (startNode != endNode) {
+            for (int i = startNode_i; i < startNode.getCurrentNumberOfKeys(); i++) {
+                System.out.println(startNode.getKey(i) + "," + startNode.getValue(i));
+            }
+            startNode_i = 0;
+            startNode = startNode.getChildNode(0);
+        }
+
+        for (int i = startNode_i; i < startNode.getCurrentNumberOfKeys() && startNode.getKey(i) <= endTarget; i++) {
+            System.out.println(startNode.getKey(i) + "," + startNode.getValue(i));
+        }
+        return "";
     }
 
     public void insert(int inputKey, int inputValue){
