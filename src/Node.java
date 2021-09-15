@@ -100,31 +100,38 @@ public class Node{
 
             //쪼개기 할때, rightChild가 새로 생긴다고 가정
             
-            Node[] tmpLeftNodesArray = new Node[currentNumberOfKeys - target_i + 1];
+            Node[] tmpLeftNodesArray = new Node[currentNumberOfKeys - target_i];
             for (int i = target_i; i < currentNumberOfKeys; i++) {
                 tmpKeyArray[i - target_i] = keys[i];
-                tmpLeftNodesArray[i - target_i] = childNodes[i];
-            } tmpLeftNodesArray[currentNumberOfKeys - target_i] = childNodes[currentNumberOfKeys];
-
+                tmpLeftNodesArray[i - target_i] = childNodes[i + 1];
+            }
+            ++currentNumberOfKeys;
             //target_i에 key가 삽입된다.
             //[target_i + 1]에는 새로운 노드가 연결된다(BPlusTree.java에서 처리)
             keys[target_i] = key;
             childNodes[target_i + 1] = null;
-            ++currentNumberOfKeys;
             for (int i = target_i + 1; i < currentNumberOfKeys; i++) {
                 keys[i] = tmpKeyArray[i - target_i - 1];
-                childNodes[i] = tmpLeftNodesArray[i - target_i];
+                childNodes[i + 1] = tmpLeftNodesArray[i - target_i - 1];
             }
+
+            System.out.print("push_back(non leaf) 정렬 및 삽입 결과: ");
+            showKeys();
+
         }
     }
 
     public void showKeys(){
-        System.out.println("\n@@@ show keys @@@");
+        System.out.print("\n@@@ show keys @@@ ");
         for (int i = 0; i < currentNumberOfKeys; i++) {
             if(i != 0) System.out.print(",");
             System.out.print(keys[i]);
         }
-        System.out.println("\n@@@@@@\n");
+        System.out.println(" @@@@@@");
+        System.out.print("@@@ show parentNode keys @@@ ");
+        if(parent == null) System.out.println("parent is null! @@");
+        else parent.showKeys();
     }
+
 
 }

@@ -13,7 +13,8 @@ public class Main {
         int degree = 5; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
-        for (int i = 1; i < 21; i++) {
+        for (int i = 1; i <= 10; ++i) {
+            bPlusTree.insert(21 - i, i * 100);
             bPlusTree.insert(i, i * 100);
         }
 
