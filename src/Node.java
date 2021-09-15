@@ -119,11 +119,12 @@ public class Node{
     }
 
     public void showKeys(){
+        System.out.println("\n@@@ show keys @@@");
         for (int i = 0; i < currentNumberOfKeys; i++) {
             if(i != 0) System.out.print(",");
             System.out.print(keys[i]);
         }
-        System.out.println();
+        System.out.println("\n@@@@@@\n");
     }
 
 }
