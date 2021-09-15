@@ -115,22 +115,15 @@ public class Node{
                 childNodes[i + 1] = tmpLeftNodesArray[i - target_i - 1];
             }
 
-            System.out.print("push_back(non leaf) 정렬 및 삽입 결과: ");
-            showKeys();
-
         }
     }
 
     public void showKeys(){
-        System.out.print("\n@@@ show keys @@@ ");
         for (int i = 0; i < currentNumberOfKeys; i++) {
             if(i != 0) System.out.print(",");
             System.out.print(keys[i]);
         }
-        System.out.println(" @@@@@@");
-        System.out.print("@@@ show parentNode keys @@@ ");
-        if(parent == null) System.out.println("parent is null! @@");
-        else parent.showKeys();
+        System.out.println();
     }
 
 

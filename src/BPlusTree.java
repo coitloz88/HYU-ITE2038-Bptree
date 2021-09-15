@@ -18,7 +18,7 @@ public class BPlusTree {
     public Node singleKeySearchNode(int target, boolean showNodeKey){
         Node tmpNode = root;
         while (!tmpNode.isLeaf()) {
-            /*if (showNodeKey)*/ tmpNode.showKeys();
+            if (showNodeKey) tmpNode.showKeys();
             // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
             int i = tmpNode.findIndexOfKeyInKeyArray(target);
             System.out.println("현재 노드는 root인가요? " + (tmpNode == root));

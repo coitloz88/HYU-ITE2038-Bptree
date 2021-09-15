@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
@@ -10,18 +11,34 @@ public class Main {
          */
         Scanner keyboard = new Scanner(System.in);
         //int degree = keyboard.nextInt();
-        int degree = 5; //child(가지) 개수
+        int degree = 8; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
-        for (int i = 1; i <= 10; ++i) {
-            bPlusTree.insert(21 - i, i * 100);
-            bPlusTree.insert(i, i * 100);
+        int totalNumber = 100;
+
+        boolean[] exist = new boolean[totalNumber];
+        for (int i = 0; i < totalNumber; i++) {
+            exist[i] = false;
         }
 
-        bPlusTree.show();
+        Random rd = new Random();
+
+        for (int i = 0; i < totalNumber; i++) {
+            int num = rd.nextInt(totalNumber);
+            while(exist[num]){
+                num = rd.nextInt(totalNumber);
+            }
+            exist[num] = true;
+            bPlusTree.insert(num, num * 100);
+        }
+
         System.out.println();
+
         System.out.println("single key search 시작!");
-        System.out.println(bPlusTree.singleKeySearch(5));
+        int findNumber = rd.nextInt(totalNumber);
+        System.out.println(bPlusTree.singleKeySearch(findNumber));
+
+        System.out.println(findNumber + "였습니다.");
 
         keyboard.close();
 
