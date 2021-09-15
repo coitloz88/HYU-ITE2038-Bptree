@@ -22,7 +22,7 @@ public class BPlusTree {
             if (showNodeKey) tmpNode.showKeys();
             // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
             int i = tmpNode.findIndexOfKeyInKeyArray(target);
-            if (target == tmpNode.getKey(i)) tmpNode = tmpNode.getChildNode(i + 1);
+            if (i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i)) tmpNode = tmpNode.getChildNode(i + 1);
             else tmpNode = tmpNode.getChildNode(i);
         }
         return tmpNode;
@@ -59,6 +59,8 @@ public class BPlusTree {
 
         if(targetNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
             targetNode.push_back(inputKey, inputValue);
+
+
         } else {
             //split
             int split_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double)degree / 2) - 1; //longTmpNode의 [split_i]번째를 올림
@@ -100,6 +102,7 @@ public class BPlusTree {
                 newRoot.setChildNode(targetNode, 0); newRoot.setChildNode(rightNode, 1);
                 targetNode.setParent(newRoot); rightNode.setParent(newRoot);
                 root = newRoot;
+
             } else {
                 internalNodeInsert(targetNode.getParent(), rightNode, virtualNode.getKey(split_i));
             }
@@ -144,6 +147,12 @@ public class BPlusTree {
             //parent Node로 올려주기
             if(parentNode == root){
                 //TODO: root인 경우 새로운 root를 파고 그 root의 좌우를 parentNode, rightNode로 설정해주고 각 노드의 부모를 새로운 root로 한다
+                Node newRoot = new Node(totalNumberOfKeys, false, null);
+                newRoot.push_back(virtualNode.getKey(split_i), 0);
+
+                newRoot.setChildNode(parentNode, 0); newRoot.setChildNode(rightNode, 1);
+                parentNode.setParent(newRoot); rightNode.setParent(newRoot);
+                root = newRoot;
                 return;
             } else {
                 internalNodeInsert(parentNode.getParent(), rightNode, virtualNode.getKey(split_i));
