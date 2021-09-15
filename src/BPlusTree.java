@@ -61,7 +61,7 @@ public class BPlusTree {
     public void insert(int inputKey, int inputValue){
         //중복 key는 들어오지 않는다
         //TODO: delete로 싹다 지워서 root가 빈 경우(예외처리)?
-
+        System.out.println("# insert: " + inputKey);
         Node targetNode = singleKeySearchNode(inputKey, false); //해당하는 key가 들어갈 leaf Node를 찾아준다
 
         if(targetNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
@@ -87,7 +87,7 @@ public class BPlusTree {
                 targetNode.setKey(0, i); targetNode.setValue(0, i);
             }
             virtualNode.push_back(inputKey, inputValue); //하나 남는 자리에 inputKey와 inputValue 넣어줌
-            virtualNode.setChildNode(targetNode.getChildNode(targetNode.getCurrentNumberOfKeys()) , virtualNode.getCurrentNumberOfKeys());
+            virtualNode.setChildNode(targetNode.getChildNode(0) , 0);
             targetNode.setCurrentNumberOfKeys(0);
 
             for (int i = 0; i < split_i; i++) {
@@ -99,8 +99,8 @@ public class BPlusTree {
             for (int i = split_i; i < totalNumberOfKeys + 1; i++) {
                 rightNode.push_back(virtualNode.getKey(i), virtualNode.getValue(i));
             }
-            rightNode.setChildNode(virtualNode.getChildNode(virtualNode.getCurrentNumberOfKeys()), rightNode.getCurrentNumberOfKeys());
-            targetNode.setChildNode(rightNode, split_i);
+            rightNode.setChildNode(virtualNode.getChildNode(0), 0);
+            targetNode.setChildNode(rightNode, 0);
             //분할 완료
 
             //parent Node로 올려주기
@@ -190,7 +190,7 @@ public class BPlusTree {
         Node tmpNode = singleKeySearchNode(0, false);
         while(tmpNode != null){
             tmpNode.showKeys();
-            tmpNode = tmpNode.getChildNode(tmpNode.getCurrentNumberOfKeys());
+            tmpNode = tmpNode.getChildNode(0);
         }
     }
 
