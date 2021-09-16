@@ -69,10 +69,10 @@ public class Node{
     }
 
     //leaf에 삽입시 key-value 오름차순 정렬 삽입, parent삽입시..코드참고
-    public void push_back(int key, int value){
+    public void push(int key, int value){
 
         if(currentNumberOfKeys >= keys.length){
-            System.err.println("push_back() 오류: 키 개수 초과");
+            System.err.println("push() 오류: 키 개수 초과");
             return;
         }
 
@@ -116,6 +116,35 @@ public class Node{
             }
 
         }
+    }
+
+    //단순 delete할때 호출
+    public void pull(int key){
+        if(currentNumberOfKeys <= (int) Math.ceil((double)keys.length / 2) - 1){
+            System.err.println("pull() 오류: 키 개수 미만");
+            return;
+        }
+
+        int target_i = findIndexOfKeyInKeyArray(key); //[target_i]에 key가 위치한다. 이를 삭제해줄 예정
+
+        if(target_i == 0){
+            System.err.println("pull()오류: internal node 삭제 해야하는데 못함!(실수로 pull 호출)");
+            return; //TODO: 필요하면 이 블럭은 지워도 될듯
+        }
+
+        //leaf일때
+        if(target_i == currentNumberOfKeys - 1){
+            keys[target_i] = 0; values[target_i] = 0;
+        }
+        else {
+            //leafNode일때
+            for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
+                keys[i] = keys[i + 1];
+                values[i] = values[i + 1];
+            }
+        }
+        --currentNumberOfKeys;
+
     }
 
     public void showKeys(){

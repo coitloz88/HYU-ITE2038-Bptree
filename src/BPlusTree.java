@@ -83,7 +83,7 @@ public class BPlusTree {
         Node targetNode = singleKeySearchNode(inputKey, false); //해당하는 key가 들어갈 leaf Node를 찾아준다
 
         if(targetNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
-            targetNode.push_back(inputKey, inputValue);
+            targetNode.push(inputKey, inputValue);
         } else {
             //split
             int split_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double)degree / 2) - 1; //longTmpNode의 [split_i]번째를 올림
@@ -101,21 +101,21 @@ public class BPlusTree {
 
             //복사 및 split
             for (int i = 0; i < totalNumberOfKeys; i++) {
-                virtualNode.push_back(targetNode.getKey(i), targetNode.getValue(i));
+                virtualNode.push(targetNode.getKey(i), targetNode.getValue(i));
                 targetNode.setKey(0, i); targetNode.setValue(0, i);
             }
-            virtualNode.push_back(inputKey, inputValue); //하나 남는 자리에 inputKey와 inputValue 넣어줌
+            virtualNode.push(inputKey, inputValue); //하나 남는 자리에 inputKey와 inputValue 넣어줌
             virtualNode.setChildNode(targetNode.getChildNode(0) , 0);
             targetNode.setCurrentNumberOfKeys(0);
 
             for (int i = 0; i < split_i; i++) {
-                targetNode.push_back(virtualNode.getKey(i), virtualNode.getValue(i));
+                targetNode.push(virtualNode.getKey(i), virtualNode.getValue(i));
             }
 
             Node rightNode = new Node(totalNumberOfKeys, true, targetNode.getParent());
 
             for (int i = split_i; i < totalNumberOfKeys + 1; i++) {
-                rightNode.push_back(virtualNode.getKey(i), virtualNode.getValue(i));
+                rightNode.push(virtualNode.getKey(i), virtualNode.getValue(i));
             }
             rightNode.setChildNode(virtualNode.getChildNode(0), 0);
             targetNode.setChildNode(rightNode, 0);
@@ -125,7 +125,7 @@ public class BPlusTree {
             if(targetNode == root){
                 //TODO: root인 경우 새로운 root를 파고 그 root의 좌우를 targetNode, rightNode로 설정해주고 각 노드의 부모를 새로운 root로 한다
                 Node newRoot = new Node(totalNumberOfKeys, false, null);
-                newRoot.push_back(virtualNode.getKey(split_i), 0);
+                newRoot.push(virtualNode.getKey(split_i), 0);
 
                 newRoot.setChildNode(targetNode, 0); newRoot.setChildNode(rightNode, 1);
                 targetNode.setParent(newRoot); rightNode.setParent(newRoot);
@@ -139,7 +139,7 @@ public class BPlusTree {
     //leafNode 위의 Node도 다차서 parent node를 또 쪼개야할때 재귀적으로 호출하는 함수
     public void internalNodeInsert(Node parentNode, Node childNode, int inputKey){
         if(parentNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
-            parentNode.push_back(inputKey, 0);
+            parentNode.push(inputKey, 0);
 
             int num = parentNode.findIndexOfKeyInKeyArray(inputKey);
             num = num >= parentNode.getCurrentNumberOfKeys() ? num - 1: num;
@@ -158,7 +158,7 @@ public class BPlusTree {
                     parentNode.setKey(0,i); parentNode.setChildNode(null, i); //삽입한 parentNode는 초기화 해준다.
             } virtualNode.setChildNode(parentNode.getChildNode(totalNumberOfKeys), totalNumberOfKeys);
             virtualNode.setCurrentNumberOfKeys(parentNode.getCurrentNumberOfKeys());
-            virtualNode.push_back(inputKey, 0);
+            virtualNode.push(inputKey, 0);
             int num = virtualNode.findIndexOfKeyInKeyArray(inputKey);
             num = num >= virtualNode.getCurrentNumberOfKeys() ? num - 1: num;
 
@@ -187,7 +187,7 @@ public class BPlusTree {
             if(parentNode == root){
                 //TODO: root인 경우 새로운 root를 파고 그 root의 좌우를 parentNode, rightNode로 설정해주고 각 노드의 부모를 새로운 root로 한다
                 Node newRoot = new Node(totalNumberOfKeys, false, null);
-                newRoot.push_back(virtualNode.getKey(split_i), 0);
+                newRoot.push(virtualNode.getKey(split_i), 0);
 
                 newRoot.setChildNode(parentNode, 0); newRoot.setChildNode(rightNode, 1);
                 parentNode.setParent(newRoot); rightNode.setParent(newRoot);
@@ -200,8 +200,50 @@ public class BPlusTree {
 
     }
 
-    public void delete(){
+    public void delete(int deleteKeyTarget){
         //TODO: delete 함수 구현
+
+        /**
+         * - 최소 (ceil(degree / 2) - 1)개의 key를 가지고 있어야 한다.
+         */
+
+        Node searchLeafNode = singleKeySearchNode(deleteKeyTarget, false);
+        /*TODO: search할때 internal Node에 해당 key값이 있는지 같이 찾아야할듯
+        ``근데 위에 투두.. 생각해보니까 leaf node이면서 [0]번째 key는 항상 internal에 존재하는듯? key가 최소일때 빼고...!*/
+        /**
+         * 1. 서치리프노드의 key개수가 min보다 클때 - 단순삭제 .. 인듯 하지만
+         *  1-1. 서치리프노드의 [0]번째 key가 아닌경우 -> 단순삭제
+         *  1-2. 서치리프노드의 [0]번째 key인 경우 -> internal node 존재, 찾아서 삭제(유일하게 key가 최소이면서 [0]인 경우 internal에 없음! 그래서 search를 하긴해야함)
+         *      1-2-1. internal node에서 merge가 일어나는 경우...? 있으니까 조심해라.
+         *
+         * 2. 서치리프노드의 key개수가 min보다 같거나 작을때 -> 왼쪽오른쪽(갈수있는지부터 확인) 옆노드에서 빌려올 수 있는지 확인
+         *  2-1. 빌려올 수 있는 경우: 빌려와서 재구성
+         *  2-2. 빌려올 수 없는 경우: recursive하게 merge
+         */
+
+        int target_i = searchLeafNode.findIndexOfKeyInKeyArray(deleteKeyTarget);
+
+        if (deleteKeyTarget != searchLeafNode.getKey(target_i) || target_i >= searchLeafNode.getCurrentNumberOfKeys()){
+            System.out.println("There is no " + deleteKeyTarget + " in the b+tree.");
+            return; //삭제하려는 노드가 없는 경우
+        }
+
+        int minNumberOfKeys = (int) Math.ceil((double)degree / 2) - 1; //leaf node는 최소 이 변수만큼 key를 가져야 한다.
+
+        if(searchLeafNode.getCurrentNumberOfKeys() > minNumberOfKeys){
+            //노드에 key가 많은 경우
+            if(deleteKeyTarget == searchLeafNode.getKey(0)){
+                //internal node에 있는 값도 삭제해줘야함! 삭제된 곳은 leaf node에 남은 애로 채워줌.
+
+            } else {
+                //TODO: 단순 삭제 구현
+                searchLeafNode.pull(deleteKeyTarget);
+            }
+
+        } else {
+            //노드에 key가 적은 경우
+        }
+
     }
 /*
     public void showAllLeafKeys(){
