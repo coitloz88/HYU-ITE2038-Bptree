@@ -79,7 +79,6 @@ public class BPlusTree {
 
     public void insert(int inputKey, int inputValue){
         //중복 key는 들어오지 않는다
-        //TODO: delete로 싹다 지워서 root가 빈 경우(예외처리)?
         Node targetNode = singleKeySearchNode(inputKey, false); //해당하는 key가 들어갈 leaf Node를 찾아준다
 
         if(targetNode.getCurrentNumberOfKeys() < totalNumberOfKeys){
@@ -123,7 +122,6 @@ public class BPlusTree {
 
             //parent Node로 올려주기
             if(targetNode == root){
-                //TODO: root인 경우 새로운 root를 파고 그 root의 좌우를 targetNode, rightNode로 설정해주고 각 노드의 부모를 새로운 root로 한다
                 Node newRoot = new Node(totalNumberOfKeys, false, null);
                 newRoot.push(virtualNode.getKey(split_i), 0);
 
@@ -143,7 +141,7 @@ public class BPlusTree {
 
             int num = parentNode.findIndexOfKeyInKeyArray(inputKey);
             num = num >= parentNode.getCurrentNumberOfKeys() ? num - 1: num;
-            parentNode.setChildNode(childNode, num + 1); //TODO:순서 맞는지 (제정신일때) 확인!
+            parentNode.setChildNode(childNode, num + 1);
 
             return;
         } else {
@@ -185,7 +183,6 @@ public class BPlusTree {
             }
             //parent Node로 올려주기
             if(parentNode == root){
-                //TODO: root인 경우 새로운 root를 파고 그 root의 좌우를 parentNode, rightNode로 설정해주고 각 노드의 부모를 새로운 root로 한다
                 Node newRoot = new Node(totalNumberOfKeys, false, null);
                 newRoot.push(virtualNode.getKey(split_i), 0);
 

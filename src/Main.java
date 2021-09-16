@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
@@ -8,17 +10,18 @@ public class Main {
         /**
          * command line argument 예시
          * 1. data file creation: program -c index_file b
-         *  java bptree -c index.dat 8
+         *  java bptree -c index. dat 8
          * 2. insertion: program -i index_file data_file
-         *  java bptree -i index.dat input.csv
+         *  java bptree -i index. dat input.csv
          * 3. deletion: program -d index_file data_file
-         *  java bptree -d index.dat delete.csv
+         *  java bptree -d index. dat delete.csv
          * 4. single key search: program -s index_file key
-         *  java bptree -s index.dat 125
+         *  java bptree -s index. dat 125
          * 5. program -r index_file start_key end_key
-         *  java bptree -r index.dat 100 200
+         *  java bptree -r index. dat 100 200
          */
 
+        //TODO: command line argument 구현
         if(args[2].equals("-c")){
             //data file creation
             try {
@@ -30,11 +33,42 @@ public class Main {
             }
         } else if(args[2].equals("-i")){
             //insert
+            try {
+                FileReader fileReader_indexDAT = new FileReader(args[3]);
+                FileReader fileReader_inputCSV = new FileReader(args[4]);
+                //TODO: index . dat에 있던 tree를 복사, input.csv를 파싱해서 insert
+                fileReader_indexDAT.close();
+                fileReader_inputCSV.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else if(args[2].equals("-d")){
             //deletion
         } else if(args[2].equals("-s")){
+            try {
+                FileReader fileReader_indexDAT = new FileReader(args[3]);
+
+                fileReader_indexDAT.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             //single key search
         } else if(args[2].equals("-r")){
+            try {
+                FileReader fileReader_indexDAT = new FileReader(args[3]);
+
+                fileReader_indexDAT.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             //range search
         }
 
