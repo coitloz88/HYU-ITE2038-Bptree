@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.Scanner;
 
-//TODO: search는 sout으로 반환한 string값을 출력해줄것!
-
 public class Main {
     public static void main(String[] args) {
         /**
@@ -108,20 +106,21 @@ public class Main {
         System.out.println();
 
         System.out.println("\n# linked list 연결 확인 #");
-        bPlusTree.showAllLeafKeys();
+  //      bPlusTree.showAllLeafKeys();
         System.out.println();
 
         bPlusTree.delete(20); //20
         System.out.println("# delete 20");
-        System.out.println(bPlusTree.singleKeySearch(19));
+        bPlusTree.singleKeySearch(19);
 
         System.out.println("\n# delete 19");
         bPlusTree.delete(19);
-
-        System.out.println(bPlusTree.singleKeySearch(17));
+        bPlusTree.singleKeySearch(17);
 
         System.out.println("\n# show all trees");
-        bPlusTree.showAllLeafKeys();
+  //      bPlusTree.showAllLeafKeys();
+        System.out.println("\n**\n");
+        bPlusTree.rangeSearch(11, 20);
 
  /*       System.out.println("\n*\nsingle key search 시작!");
         int findNumber = rd.nextInt(totalNumber);

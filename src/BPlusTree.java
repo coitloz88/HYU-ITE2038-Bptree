@@ -30,7 +30,7 @@ public class BPlusTree {
         return tmpNode;
     }
 
-    public String singleKeySearch(int target) {
+    public void singleKeySearch(int target) {
         /**
          * root부터 탐색 시작
          * 동일한 값이 있을 때 return
@@ -38,31 +38,41 @@ public class BPlusTree {
          *
          * 찾으면 해당하는 value 반환
          */
-        if (root.getCurrentNumberOfKeys() == 0) return "root is empty";
+        if (root.getCurrentNumberOfKeys() == 0){
+            System.out.println("root is empty");
+            return;
+        }
         Node tmpNode = singleKeySearchNode(target, true);
 
         //leaf 도달
         int i = tmpNode.findIndexOfKeyInKeyArray(target);
 
         if (i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i)){
-            return String.valueOf(tmpNode.getValue(i));
+            System.out.println(tmpNode.getValue(i));
         }
-        else return "NOT FOUND";
+        else{
+            System.out.println("NOT FOUND");
+            return;
+        }
     }
 
-    public String rangeSearch(int startTarget, int endTarget) {
+    public void rangeSearch(int startTarget, int endTarget) {
         Node startNode = singleKeySearchNode(startTarget, false);
         Node endNode = singleKeySearchNode(endTarget, false);
         int startNode_i = startNode.findIndexOfKeyInKeyArray(startTarget);
 
         if (startNode_i >= startNode.getCurrentNumberOfKeys()) {
-            if (startNode == endNode) return "NOT FOUND";
+            if (startNode == endNode) {
+                System.out.println("NOT FOUND");
+                return;
+            }
             else {
                 startNode = startNode.getChildNode(0);
                 startNode_i = 0;
             }
         } else if (startNode.getKey(startNode_i) > endTarget) {
-            return "NOT FOUND";
+            System.out.println("NOT FOUND");
+            return;
         }
 
         while (startNode != endNode) {
@@ -76,7 +86,6 @@ public class BPlusTree {
         for (int i = startNode_i; i < startNode.getCurrentNumberOfKeys() && startNode.getKey(i) <= endTarget; i++) {
             System.out.println(startNode.getKey(i) + "," + startNode.getValue(i));
         }
-        return "";
     }
 
     public void insert(int inputKey, int inputValue) {
@@ -289,7 +298,7 @@ public class BPlusTree {
         }
     }
 
-
+/*
     public void showAllLeafKeys() {
         Node tmpNode = singleKeySearchNode(0, false);
         while (tmpNode != null) {
@@ -297,7 +306,7 @@ public class BPlusTree {
             tmpNode = tmpNode.getChildNode(0);
         }
     }
-
+*/
 }
 
 

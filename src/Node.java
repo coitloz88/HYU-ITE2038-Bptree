@@ -143,7 +143,7 @@ public class Node{
     public void showKeys(){
         for (int i = 0; i < currentNumberOfKeys; i++) {
             if(i != 0) System.out.print(",");
-            System.out.print(keys[i] + " & values: " + values[i]);
+            System.out.print(keys[i]);
         }
         System.out.println();
     }
