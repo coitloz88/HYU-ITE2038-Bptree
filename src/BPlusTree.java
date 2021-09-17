@@ -30,6 +30,21 @@ public class BPlusTree {
         return tmpNode;
     }
 
+    public Node singleKeySearchInternalNode(int target, boolean showNodeKey) {
+        Node tmpNode = root;
+        while (!tmpNode.isLeaf()) {
+            if (showNodeKey) tmpNode.showKeys();
+
+            // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
+            int i = tmpNode.findIndexOfKeyInKeyArray(target);
+            if (i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i))
+                return tmpNode.getChildNode(i + 1);
+            else tmpNode = tmpNode.getChildNode(i);
+
+        }
+        return tmpNode;
+    }
+
     public void singleKeySearch(int target) {
         /**
          * root부터 탐색 시작
@@ -247,30 +262,27 @@ public class BPlusTree {
         }
 
         int minNumberOfKeys = (int) Math.ceil((double) degree / 2) - 1; //leaf node는 최소 이 변수만큼 key를 가져야 한다.
+        if (deleteKeyTarget == searchLeafNode.getKey(0)) {
+            //TODO: internal node에 있는 값도 삭제해줘야함!
+            deleteInternalNode(deleteKeyTarget);
+        } else {
+            if (searchLeafNode.getCurrentNumberOfKeys() > minNumberOfKeys) {
+                //노드에 key가 많은 경우
 
-        if (searchLeafNode.getCurrentNumberOfKeys() > minNumberOfKeys) {
-            //노드에 key가 많은 경우
-            if (deleteKeyTarget == searchLeafNode.getKey(0)) {
-                //internal node에 있는 값도 삭제해줘야함! 삭제된 곳은 leaf node에 남은 애로 채워줌.
+                searchLeafNode.push_out(deleteKeyTarget);
+
 
             } else {
-                searchLeafNode.push_out(deleteKeyTarget);
-            }
+                //노드에 key가 적은 경우
+                /**
+                 * STEP 3 If L's right sibling can spare an entry, then move smallest entry in right sibling to L
+                 *  STEP 3a Else, if L's left sibling can spare an entry then move largest entry in left sibling to L
+                 *  STEP 3b Else, merge L and a sibling
+                 * STEP 4 If merging, then recursively deletes the entry (pointing toL or sibling) from the parent.
+                 * STEP 5 Merge could propagate to root, decreasing height
+                 */
+                //check whether node can borrow key from left child or not
 
-        } else {
-            //노드에 key가 적은 경우
-            /**
-             * STEP 3 If L's right sibling can spare an entry, then move smallest entry in right sibling to L
-             *  STEP 3a Else, if L's left sibling can spare an entry then move largest entry in left sibling to L
-             *  STEP 3b Else, merge L and a sibling
-             * STEP 4 If merging, then recursively deletes the entry (pointing toL or sibling) from the parent.
-             * STEP 5 Merge could propagate to root, decreasing height
-             */
-            if (deleteKeyTarget == searchLeafNode.getKey(0)) {
-                //TODO: internal node 변경이 필요
-            }
-            //check whether node can borrow key from left child or not
-            else {
                 int indexInParentNode = searchLeafNode.getParent().findIndexOfKeyInKeyArray(deleteKeyTarget);
                 Node siblingNode;
                 if (indexInParentNode < searchLeafNode.getParent().getCurrentNumberOfKeys() && searchLeafNode.getParent().getChildNode(indexInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //right sibiling 존재, 빌려올 수 있음
@@ -292,10 +304,15 @@ public class BPlusTree {
                     indexInParentNode = indexInParentNode >= searchLeafNode.getParent().getCurrentNumberOfKeys() ? indexInParentNode - 1 : indexInParentNode;
                     searchLeafNode.getParent().setKey(searchLeafNode.getKey(0), indexInParentNode);
 
+                } else {
+                    //TODO: merge해야하는 경우
                 }
-            }
 
+            }
         }
+    }
+    public void deleteInternalNode(int deleteKeyTarget){
+        //TODO: internal node 삭제 함수 완성
     }
 
 /*
