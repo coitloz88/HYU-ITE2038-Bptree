@@ -1,10 +1,10 @@
-public class Node{
+public class Node {
     /**
      * 0. leaf인지 아닌지
      * 1. m: # of keys
      * 2. p: an array of <key, left_child_node> pairs
      * 3. r: a pointer to the rightmost child node / a pointer to the right sibling node
-     *
+     * <p>
      * boolean push_back(int index): index값을 하나 받으면 key배열에 더 넣을 수 있는지 확인해보고 되면 넣고 안되면 0을 반환하는 함수
      */
 
@@ -15,7 +15,7 @@ public class Node{
     private Node[] childNodes;
     private Node parent;
 
-    public Node(int totalNumberOfKeys, boolean isLeaf, Node parent){
+    public Node(int totalNumberOfKeys, boolean isLeaf, Node parent) {
         leaf = isLeaf;
 
         currentNumberOfKeys = 0;
@@ -44,34 +44,51 @@ public class Node{
         this.currentNumberOfKeys = currentNumberOfKeys;
     }
 
-    public int getKey(int i) { return keys[i]; }
+    public int getKey(int i) {
+        return keys[i];
+    }
 
-    public void setKey(int key, int i) { keys[i] = key; }
+    public void setKey(int key, int i) {
+        keys[i] = key;
+    }
 
-    public Node getChildNode(int i) { return childNodes[i]; }
+    public Node getChildNode(int i) {
+        return childNodes[i];
+    }
 
-    public void setChildNode(Node leftNode, int i) { childNodes[i] = leftNode; }
+    public void setChildNode(Node leftNode, int i) {
+        childNodes[i] = leftNode;
+    }
 
-    public int getValue(int i) { return values[i]; }
+    public int getValue(int i) {
+        return values[i];
+    }
 
-    public void setValue(int value, int i) { values[i] = value; }
+    public void setValue(int value, int i) {
+        values[i] = value;
+    }
 
-    public Node getParent() { return parent; }
+    public Node getParent() {
+        return parent;
+    }
 
-    public void setParent(Node parent) { this.parent = parent; }
+    public void setParent(Node parent) {
+        this.parent = parent;
+    }
 
     //input이 삽입되면 되는 [index], 혹은 input이 위치한 [index] 반환
-    public int findIndexOfKeyInKeyArray(int input){
+    public int findIndexOfKeyInKeyArray(int input) {
         //주의: search를 하는게 아니라 그냥 순서만 찾는 경우 음... 암튼 주의
         int index;
-        for (index = 0; index < currentNumberOfKeys && input > keys[index]; index++) { } //input이 모든 key값보다 크면 keys 크기를 1 초과하는 값을 가짐
+        for (index = 0; index < currentNumberOfKeys && input > keys[index]; index++) {
+        } //input이 모든 key값보다 크면 keys 크기를 1 초과하는 값을 가짐
         return index;
     }
 
     //leaf에 삽입시 key-value 오름차순 정렬 삽입, parent삽입시..코드참고
-    public void push(int key, int value){
+    public void push(int key, int value) {
 
-        if(currentNumberOfKeys >= keys.length){
+        if (currentNumberOfKeys >= keys.length) {
             System.err.println("push() 오류: 키 개수 초과");
             return;
         }
@@ -79,7 +96,7 @@ public class Node{
         int target_i = findIndexOfKeyInKeyArray(key); //[target_i]에 (index, value)가 들어간다. key를 오름차순으로 정렬하기 위함
 
         int[] tmpKeyArray = new int[currentNumberOfKeys - target_i];
-        if(leaf) {
+        if (leaf) {
             //leaf인 경우, keys와 values가 유효함. key와 value는 1:1로 대응됨
             int[] tmpValueArray = new int[currentNumberOfKeys - target_i];
             for (int i = target_i; i < currentNumberOfKeys; i++) {
@@ -99,7 +116,7 @@ public class Node{
             //leftnode[-]가 null인 경우 null로, 주소를 가지는 경우는 주소를 저장해줌
 
             //쪼개기 할때, rightChild가 새로 생긴다고 가정
-            
+
             Node[] tmpLeftNodesArray = new Node[currentNumberOfKeys - target_i];
             for (int i = target_i; i < currentNumberOfKeys; i++) {
                 tmpKeyArray[i - target_i] = keys[i];
@@ -119,36 +136,51 @@ public class Node{
     }
 
     //단순 delete할때 호출
-    public void push_out(int key){
-        if(currentNumberOfKeys == 0){
+    public void push_out(int key) {
+        if (currentNumberOfKeys == 0) {
             System.err.println("push_out() 오류: key가 없음");
         }
 
         int target_i = findIndexOfKeyInKeyArray(key); //[target_i]에 key가 위치한다. 이를 삭제해줄 예정
-
-        //leaf일때
-        if(target_i == currentNumberOfKeys - 1){
-            keys[target_i] = 0; values[target_i] = 0;
-        }
-        else {
-            for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
-                keys[i] = keys[i + 1];
-                values[i] = values[i + 1];
+        if (leaf) {
+            //leaf일때
+            if (target_i == currentNumberOfKeys - 1) {
+                keys[target_i] = 0;
+                values[target_i] = 0;
+            } else {
+                for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
+                    keys[i] = keys[i + 1];
+                    values[i] = values[i + 1];
+                }
+            }
+        } else {
+            //leaf가 아닐때(delete할때)
+            if (target_i == currentNumberOfKeys - 1) {
+                keys[target_i] = 0;
+                childNodes[target_i + 1] = null;
+            } else {
+                for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
+                    keys[i] = keys[i + 1];
+                    childNodes[i] = childNodes[i + 1];
+                } childNodes[currentNumberOfKeys - 1] = childNodes[currentNumberOfKeys];
             }
         }
         --currentNumberOfKeys;
 
     }
 
-    public void showKeys(){
+    public void showKeys() {
+        System.out.println("@@ show keys @@");
         for (int i = 0; i < currentNumberOfKeys; i++) {
-            if(i != 0) System.out.print(",");
-            System.out.print(keys[i]);
+            if (i != 0) System.out.print(",");
+            System.out.print(keys[i] + " & value: " + values[i]);
         }
-        System.out.println();
+        System.out.println("");
+        if(parent == null) System.out.println("@@ parent is null @@\n");
+        else parent.showKeys();
     }
 
-
 }
+
 
 
