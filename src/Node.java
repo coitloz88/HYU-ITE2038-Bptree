@@ -119,7 +119,7 @@ public class Node{
     }
 
     //단순 delete할때 호출
-    public void pull(int key){
+    public void push_out(int key){
         if(currentNumberOfKeys <= (int) Math.ceil((double)keys.length / 2) - 1){
             System.err.println("pull() 오류: 키 개수 미만");
             return;

@@ -218,6 +218,7 @@ public class BPlusTree {
          *  2-2. 빌려올 수 없는 경우: recursive하게 merge
          */
 
+
         int target_i = searchLeafNode.findIndexOfKeyInKeyArray(deleteKeyTarget);
 
         if (deleteKeyTarget != searchLeafNode.getKey(target_i) || target_i >= searchLeafNode.getCurrentNumberOfKeys()){
@@ -233,12 +234,28 @@ public class BPlusTree {
                 //internal node에 있는 값도 삭제해줘야함! 삭제된 곳은 leaf node에 남은 애로 채워줌.
 
             } else {
-                //TODO: 단순 삭제 구현
-                searchLeafNode.pull(deleteKeyTarget);
+                searchLeafNode.push_out(deleteKeyTarget);
             }
 
         } else {
             //노드에 key가 적은 경우
+            /**
+             * STEP 3 If L's right sibling can spare an entry, then move smallest entry in right sibling to L
+             *  STEP 3a Else, if L's left sibling can spare an entry then move largest entry in left sibling to L
+             *  STEP 3b Else, merge L and a sibling
+             * STEP 4 If merging, then recursively deletes the entry (pointing toL or sibling) from the parent.
+             * STEP 5 Merge could propagate to root, decreasing height
+             */
+
+            //check whether node can borrow key from left child or not
+            if(searchLeafNode.getParent().findIndexOfKeyInKeyArray(deleteKeyTarget) < searchLeafNode.getParent().getCurrentNumberOfKeys() && searchLeafNode.getParent().getChildNode(target_i + 1).getCurrentNumberOfKeys() > minNumberOfKeys){ //right sibiling 존재, 빌려올 수 있음
+                int rightKey = searchLeafNode.getParent().getChildNode(target_i + 1).getKey(0);
+
+
+            } else if(searchLeafNode.getParent().findIndexOfKeyInKeyArray(deleteKeyTarget) > 0 && searchLeafNode.getParent().getChildNode(target_i - 1).getCurrentNumberOfKeys() > minNumberOfKeys){ //left sibling이 key를 빌려줄 수 있음
+
+            }
+
         }
 
     }
