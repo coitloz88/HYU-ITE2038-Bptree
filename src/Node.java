@@ -93,7 +93,7 @@ public class Node{
                 keys[i] = tmpKeyArray[i - target_i - 1];
                 values[i] = tmpValueArray[i - target_i - 1];
             }
-        } else { //TODO: 이거 다시 확인해보기!!
+        } else {
             //leaf가 아닌 경우, keys와 leftnodes가 유효함. keys와 leftnodes는 1:1로 대응되지 않음(leftnodes는 듬성듬성 존재)
             //insert나 delete할때 노드를 쪼개고 부모에 넣는 경우를 위해 사용
             //leftnode[-]가 null인 경우 null로, 주소를 가지는 경우는 주소를 저장해줌
@@ -119,25 +119,18 @@ public class Node{
     }
 
     //단순 delete할때 호출
-    public void pull(int key){
-        if(currentNumberOfKeys <= (int) Math.ceil((double)keys.length / 2) - 1){
-            System.err.println("pull() 오류: 키 개수 미만");
-            return;
+    public void push_out(int key){
+        if(currentNumberOfKeys == 0){
+            System.err.println("push_out() 오류: key가 없음");
         }
 
         int target_i = findIndexOfKeyInKeyArray(key); //[target_i]에 key가 위치한다. 이를 삭제해줄 예정
-
-        if(target_i == 0){
-            System.err.println("pull()오류: internal node 삭제 해야하는데 못함!(실수로 pull 호출)");
-            return; //TODO: 필요하면 이 블럭은 지워도 될듯
-        }
 
         //leaf일때
         if(target_i == currentNumberOfKeys - 1){
             keys[target_i] = 0; values[target_i] = 0;
         }
         else {
-            //leafNode일때
             for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
                 keys[i] = keys[i + 1];
                 values[i] = values[i + 1];
