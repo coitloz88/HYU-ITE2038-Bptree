@@ -8,10 +8,14 @@ public class BPlusTree {
     private final int degree;
     private final int totalNumberOfKeys;
     private Node root;
+    private final int divide_i;
+    private final int minNumberOfKeys;
 
     public BPlusTree(int degree) {
         this.degree = degree;
         this.totalNumberOfKeys = degree - 1;
+        this.divide_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double) degree / 2) - 1;
+        this.minNumberOfKeys = (int) Math.ceil((double) degree / 2) - 1;
         root = new Node(totalNumberOfKeys, true, null);
     }
 
@@ -38,7 +42,7 @@ public class BPlusTree {
             // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
             int i = tmpNode.findIndexOfKeyInKeyArray(target);
             if (i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i))
-                return tmpNode.getChildNode(i + 1);
+                return tmpNode;
             else tmpNode = tmpNode.getChildNode(i);
 
         }
@@ -111,15 +115,13 @@ public class BPlusTree {
             targetNode.push(inputKey, inputValue);
         } else {
             //split
-            int split_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double) degree / 2) - 1; //longTmpNode의 [split_i]번째를 올림
-
             /**
              * 1. (totalNumberOfKeys + 1)의 Node를 하나 생성, targetNode의 '값'만 복사해줌 (주소 X) ->virtualNode
              *      leftNode랑 .. 기타등등
              * 2. inputKey, inputValue 쌍을 넣어줌 push_back해줌
-             * 3. rightChildNode(new로 동적할당) -> longTmpNode의 [split_i] 이후의 값을 대입
+             * 3. rightChildNode(new로 동적할당) -> longTmpNode의 [divide_i] 이후의 값을 대입
              * 4. targetNode의 rightNode가 rightChildNode를 가리키게 함 #targetNode가 root인지 확인!!(5와 예외처리)
-             * 5. virutalNode의 keys[split_i]를 parent node에 internalNodeInsert()함
+             * 5. virutalNode의 keys[divide_i]를 parent node에 internalNodeInsert()함
              */
 
             Node virtualNode = new Node(totalNumberOfKeys + 1, true, null);
@@ -134,13 +136,13 @@ public class BPlusTree {
             virtualNode.setChildNode(targetNode.getChildNode(0), 0);
             targetNode.setCurrentNumberOfKeys(0);
 
-            for (int i = 0; i < split_i; i++) {
+            for (int i = 0; i < divide_i; i++) {
                 targetNode.push(virtualNode.getKey(i), virtualNode.getValue(i));
             }
 
             Node rightNode = new Node(totalNumberOfKeys, true, targetNode.getParent());
 
-            for (int i = split_i; i < totalNumberOfKeys + 1; i++) {
+            for (int i = divide_i; i < totalNumberOfKeys + 1; i++) {
                 rightNode.push(virtualNode.getKey(i), virtualNode.getValue(i));
             }
             rightNode.setChildNode(virtualNode.getChildNode(0), 0);
@@ -150,7 +152,7 @@ public class BPlusTree {
             //parent Node로 올려주기
             if (targetNode == root) {
                 Node newRoot = new Node(totalNumberOfKeys, false, null);
-                newRoot.push(virtualNode.getKey(split_i), 0);
+                newRoot.push(virtualNode.getKey(divide_i), 0);
 
                 newRoot.setChildNode(targetNode, 0);
                 newRoot.setChildNode(rightNode, 1);
@@ -158,7 +160,7 @@ public class BPlusTree {
                 rightNode.setParent(newRoot);
                 root = newRoot;
             } else {
-                internalNodeInsert(targetNode.getParent(), rightNode, virtualNode.getKey(split_i));
+                internalNodeInsert(targetNode.getParent(), rightNode, virtualNode.getKey(divide_i));
             }
         }
     }
@@ -232,90 +234,197 @@ public class BPlusTree {
 
     }
 
-    public void delete(int deleteKeyTarget) {
-        //TODO: delete 함수 구현
-
+    public void delete(int inputDeleteKey){
         /**
-         * - 최소 (ceil(degree / 2) - 1)개의 key를 가지고 있어야 한다.
+         * 1. B+ Tree index에서 key 값을 검색하여 데이터의 위치를 찾아 데이터베이스에서 데이터를 삭제한다.
+         * 2. B+ Tree index에서 삭제한 데이터의 (pointer, key) 쌍을 삭제한다.
+         * 3-1. 삭제 후 entry가 얼마 남지 않았고, 형제 노드와 merge가 가능한 경우 merge하여 하나의 노드로 만든다.
+         * 3-2. 삭제 후 entry가 얼마 남지 않았지만, 형제 노드와 merge가 불가능한 경우 redistribute한다.
+         * 4. parent 노드에서도 (pointer, key) 쌍을 삭제한 뒤 3-1과 3-2를 반복한다.
          */
+        Node searchLeafNode = singleKeySearchNode(inputDeleteKey, false);
+        int target_i = searchLeafNode.findIndexOfKeyInKeyArray(inputDeleteKey);
 
-        Node searchLeafNode = singleKeySearchNode(deleteKeyTarget, false);
-        /*TODO: search할때 internal Node에 해당 key값이 있는지 같이 찾아야할듯
-        ``근데 위에 투두.. 생각해보니까 leaf node이면서 [0]번째 key는 항상 internal에 존재하는듯? key가 최소일때 빼고...!*/
-        /**
-         * 1. 서치리프노드의 key개수가 min보다 클때 - 단순삭제 .. 인듯 하지만
-         *  1-1. 서치리프노드의 [0]번째 key가 아닌경우 -> 단순삭제
-         *  1-2. 서치리프노드의 [0]번째 key인 경우 -> internal node 존재, 찾아서 삭제(유일하게 key가 최소이면서 [0]인 경우 internal에 없음! 그래서 search를 하긴해야함)
-         *      1-2-1. internal node에서 merge가 일어나는 경우...? 있으니까 조심해라.
-         *
-         * 2. 서치리프노드의 key개수가 min보다 같거나 작을때 -> 왼쪽오른쪽(갈수있는지부터 확인) 옆노드에서 빌려올 수 있는지 확인
-         *  2-1. 빌려올 수 있는 경우: 빌려와서 재구성
-         *  2-2. 빌려올 수 없는 경우: recursive하게 merge
-         */
-
-
-        int target_i = searchLeafNode.findIndexOfKeyInKeyArray(deleteKeyTarget);
-
-        if (deleteKeyTarget != searchLeafNode.getKey(target_i) || target_i >= searchLeafNode.getCurrentNumberOfKeys()) {
-            System.out.println("There is no " + deleteKeyTarget + " in the b+tree.");
-            return; //삭제하려는 노드가 없는 경우
+        //예외 처리1: 트리가 빈 경우
+        if(searchLeafNode.getCurrentNumberOfKeys() == 0) {
+            System.out.println("The tree is empty.");
+            return;
         }
 
-        int minNumberOfKeys = (int) Math.ceil((double) degree / 2) - 1; //leaf node는 최소 이 변수만큼 key를 가져야 한다.
-        if (deleteKeyTarget == searchLeafNode.getKey(0)) {
-            //TODO: internal node에 있는 값도 삭제해줘야함!
-            deleteInternalNode(deleteKeyTarget);
-        } else {
-            if (searchLeafNode.getCurrentNumberOfKeys() > minNumberOfKeys) {
-                //노드에 key가 많은 경우
+        //예외 처리2: 트리에 해당하는 노드가 없는 경우
+        if (inputDeleteKey != searchLeafNode.getKey(target_i) || target_i >= searchLeafNode.getCurrentNumberOfKeys()) {
+            System.out.println("There is no " + inputDeleteKey + " in the b+tree.");
+            return;
+        }
 
-                searchLeafNode.push_out(deleteKeyTarget);
+        //예외 처리3: 찾은 leaf node가 root인 경우(root만 있는 경우) -> divide_i와의 비교가 필요없기때문에 함수 종료
+        if (searchLeafNode == root) {
+            searchLeafNode.push_out(inputDeleteKey);
+            return;
+        }
 
-
-            } else {
-                //노드에 key가 적은 경우
-                /**
-                 * STEP 3 If L's right sibling can spare an entry, then move smallest entry in right sibling to L
-                 *  STEP 3a Else, if L's left sibling can spare an entry then move largest entry in left sibling to L
-                 *  STEP 3b Else, merge L and a sibling
-                 * STEP 4 If merging, then recursively deletes the entry (pointing toL or sibling) from the parent.
-                 * STEP 5 Merge could propagate to root, decreasing height
-                 */
-                //check whether node can borrow key from left child or not
-
-                int indexInParentNode = searchLeafNode.getParent().findIndexOfKeyInKeyArray(deleteKeyTarget);
-                Node siblingNode;
-                if (indexInParentNode < searchLeafNode.getParent().getCurrentNumberOfKeys() && searchLeafNode.getParent().getChildNode(indexInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //right sibiling 존재, 빌려올 수 있음
-                    siblingNode = searchLeafNode.getParent().getChildNode(indexInParentNode + 1);
-
-                    searchLeafNode.push_out(deleteKeyTarget);
-                    searchLeafNode.push(siblingNode.getKey(0), siblingNode.getValue(0));
-                    siblingNode.push_out(siblingNode.getKey(0));
-                    indexInParentNode = indexInParentNode >= searchLeafNode.getParent().getCurrentNumberOfKeys() ? indexInParentNode - 1 : indexInParentNode;
-                    searchLeafNode.getParent().setKey(siblingNode.getKey(0), indexInParentNode);
-
-                } else if (indexInParentNode > 0 && searchLeafNode.getParent().getChildNode(indexInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //left sibling이 key를 빌려줄 수 있음
-                    siblingNode = searchLeafNode.getParent().getChildNode(indexInParentNode - 1);
-
-                    searchLeafNode.push_out(deleteKeyTarget);
-                    searchLeafNode.push(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), siblingNode.getValue(siblingNode.getCurrentNumberOfKeys() - 1));
-                    siblingNode.push_out(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1));
-
-                    indexInParentNode = indexInParentNode >= searchLeafNode.getParent().getCurrentNumberOfKeys() ? indexInParentNode - 1 : indexInParentNode;
-                    searchLeafNode.getParent().setKey(searchLeafNode.getKey(0), indexInParentNode);
-
-                } else {
-                    //TODO: merge해야하는 경우
+        if(searchLeafNode.getCurrentNumberOfKeys() > minNumberOfKeys){
+            //key가 많은 경우
+            if (inputDeleteKey == searchLeafNode.getKey(0)) {
+                searchLeafNode.push_out(inputDeleteKey);
+                Node internalNode = singleKeySearchInternalNode(inputDeleteKey, false);
+                if(!internalNode.isLeaf()) { //최솟값지우는경우 예외처리, leaf의 [0]은 지우고, internalNode자리에는 leaf의 [1]번째 key를 넣어주면됨!([0]부터 지웠다면 [0]
+                    int indexInInternalNode = internalNode.findIndexOfKeyInKeyArray(inputDeleteKey);
+                    indexInInternalNode = indexInInternalNode >= internalNode.getCurrentNumberOfKeys() ? indexInInternalNode - 1 : indexInInternalNode;
+                    internalNode.setKey(searchLeafNode.getKey(0), indexInInternalNode);
                 }
-
+            }
+            else searchLeafNode.push_out(inputDeleteKey);
+        } else {
+            //key가 적은 경우
+            //sibling node에서 빌려올 수 있는지 확인
+            if(!borrowFromSiblingNode(searchLeafNode, inputDeleteKey)){ //빌릴수 있으면 조건문 함수내에서 빌린거 정리싹다함
+                //빌릴 수 없으면 merge
+                merge(searchLeafNode, inputDeleteKey);
             }
         }
-    }
-    public void deleteInternalNode(int deleteKeyTarget){
-        //TODO: internal node 삭제 함수 완성
+
     }
 
-/*
+    //mainNode에는 key가 divide_i만큼 있음(그래서 원래는 더이상 못뺌)
+    public boolean borrowFromSiblingNode(Node mainNode, int deleteKey){
+        //빌릴 수 있으면 빌려서 연산 다끝내고 true 반환, 못빌리면 false 반환함
+        boolean isZero = mainNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
+        int indexOfChildInParentNode = mainNode.getParent().findIndexOfChild(deleteKey);
+
+        if (indexOfChildInParentNode > 0 && mainNode.getParent().getChildNode(indexOfChildInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //left sibling이 key를 빌려줄 수 있음
+            System.out.println("왼쪽 형제 노드에서 빌려오기");
+
+            Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode - 1);
+            if(isZero){
+                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                internalNode.setKey(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+            }
+
+            mainNode.push_out(deleteKey);
+            mainNode.push(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), siblingNode.getValue(siblingNode.getCurrentNumberOfKeys() - 1));
+            siblingNode.push_out(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1));
+
+            mainNode.getParent().setKey(mainNode.getKey(0), indexOfChildInParentNode - 1);
+        } else if (indexOfChildInParentNode < mainNode.getParent().getCurrentNumberOfKeys() && mainNode.getParent().getChildNode(indexOfChildInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //right sibiling 존재, 빌려올 수 있음
+            System.out.println("오른쪽 형제 노드에서 빌려오기");
+            Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode + 1);
+
+            if(isZero){
+                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                if(degree == 3) internalNode.setKey(siblingNode.getKey(0) , internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                else internalNode.setKey(mainNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+            }
+
+            mainNode.push_out(deleteKey);
+            mainNode.push(siblingNode.getKey(0), siblingNode.getValue(0));
+            siblingNode.push_out(siblingNode.getKey(0));
+
+            mainNode.getParent().setKey(siblingNode.getKey(0), indexOfChildInParentNode);
+        } else return false;
+        return true;
+    }
+
+    //borrow가 안되는 경우 실행됨
+    public void merge(Node mainDeleteNode, int deleteKey){
+        //TODO:merge 구현
+        /**
+         * 아.. 잠시만 와다다 정리해봄
+         * 남은 key가 0인 경우(즉 mainDeleteNode의 currentNumberOfKeys가 1인 경우)는 바로 redistribute로 넘겨줌! 아래 과정 처리안됨
+         *
+         *  1. merge가 가능한 경우: 부모 노드가 divide_i 초과
+         *   merge가 가능한데 [0]을 삭제하는 경우, internalNode에 해당하는 값을 [0]을 지운 노드의 [1]번째로 set해준다 (push_out으로 꺼낸 다음인 경우 [0])
+         *   - 기본적으로 왼쪽 노드에 merge함
+         *      siblingNode = getParent.childNode[indexInParentNode - 1]
+         *      (1) isZero인 경우, mainDeleteNode의 [1]번째 값을 internal Node에 알맞은 위치에(본래 deleteKey가 위치해야했던 곳) set해줌 -> 이 internal이 root여도 상관없는게 지우는게 아니라 값을 바꿔치기 하는거임
+         *      (2) mainDeleteNode에서 deleteKey를 push_out해줌
+         *      (3) 왼쪽 siblingNode에 있던 애들을 전부 push_out하고 mainDeleteNode로 push
+         *      (4) parentNode의 keys에서 mainDeleteNode의 keys[currentNumberOfKeys - 1]값을 push_out
+         *
+         *   - 오른쪽으로 merge하는 경우(왼쪽에 형제 노드가 더 없는 경우!! 예외 처리처럼 해줌)
+         *      siblingNode = getParent.childNode[indexInParentNode + 1]
+         *      (1) isZero인 경우 mainDeleteNode의 [1]번째 값을 internal Node에 알맞은 위치에(본래 deleteKey가 위치해야했던 곳) set해줌
+         *      (1) mainDeleteNode에서 deleteKey를 push_out해줌
+         *      (2) 빼고나서 mainDeleteNode에 key가 없으면(0개면) getParent.childNode[indexInParentNode + 1]에 mainDeleteKey에 남은 값 push하는거 관둠(해야되면 반복문으로 끝까지 push)
+         *      (3) parentNode의 keys에서 siblingNode의 [0]번째 key값을 push_out해줌
+         *
+         *  2. merge 안되면 부모 노드가 부모의 sibling에서 빌려올수있는지 확인 //TODO
+         */
+
+        //merge될때, 왼쪽 기준이 살아남음
+
+        boolean isZero = mainDeleteNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
+        int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(deleteKey); //TODO: parent가 null인 경우 예외 처리
+
+        //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우
+        if(degree <= 4 && mainDeleteNode.getParent().getCurrentNumberOfKeys() > minNumberOfKeys) {
+            //TODO: degree == 3인 경우
+            if(indexOfChildInParentNode == 0){
+                //오른쪽에 merge: sibling이 사라짐
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
+                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                if(!internalNode.isLeaf()){
+                    internalNode.setKey(siblingNode.getKey(0), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                }
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++) mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
+                mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
+            } else {
+                //왼쪽에 merge: mainDeleteNode가 사라짐
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++) siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
+                mainDeleteNode.getParent().push_out(deleteKey);
+            }
+        }
+
+        //degree >= 4인 경우
+        else if (mainDeleteNode.getParent().getCurrentNumberOfKeys() > minNumberOfKeys) {
+            if(indexOfChildInParentNode == 0){
+                //오른쪽에 merge: sibling이 사라짐
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
+                if(isZero){
+                    //internal Node에 해당하는 deleteKey순서의 값 변경
+                    Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                    //예외처리: 최솟값을 지우는 경우 - 필요없나?
+                    if(!internalNode.isLeaf()){
+                        internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                    }
+                }
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++) mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
+                mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
+
+            } else {
+                //왼쪽에 merge
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
+                if(isZero){
+                    //최솟값이 아닌 deleteKey, internal Node에서 해당하는 deleteKey 순서의 값 변경
+                    Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                    internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                }
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++) siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
+                mainDeleteNode.getParent().push_out(mainDeleteNode.getKey(0));
+            }
+
+        }
+
+
+
+        else {
+            //TODO: merge 안되는 경우
+            // merge도 boolean으로 넣어서 처리? 아니면 redistribute로 바로 넘겨줌?
+            redistribute();
+        }
+
+
+    }
+
+    public void redistribute(){
+        //TODO:redistribute 구현
+    }
+
     public void showAllLeafKeys() {
         Node tmpNode = singleKeySearchNode(0, false);
         while (tmpNode != null) {
@@ -323,7 +432,7 @@ public class BPlusTree {
             tmpNode = tmpNode.getChildNode(0);
         }
     }
-*/
+
 }
 
 
