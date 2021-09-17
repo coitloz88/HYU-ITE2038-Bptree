@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.Scanner;
 
+//TODO: search는 sout으로 반환한 string값을 출력해줄것!
+
 public class Main {
     public static void main(String[] args) {
         /**
@@ -20,7 +22,7 @@ public class Main {
          * 5. program -r index_file start_key end_key
          *  java bptree -r index. dat 100 200
          */
-
+/*
         //TODO: command line argument 구현
         if(args[2].equals("-c")){
             //data file creation
@@ -71,7 +73,7 @@ public class Main {
 
             //range search
         }
-
+*/
         /**
          * csv파일에서 ','를 기준으로 index를 받아온다
          * 받아오면서 하나씩 B+tree에 넣어(insert)준다
@@ -79,11 +81,11 @@ public class Main {
          */
         Scanner keyboard = new Scanner(System.in);
         //int degree = keyboard.nextInt();
-        int degree = 20; //child(가지) 개수
+        int degree = 5; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
-        int totalNumber = 100;
-
+        int totalNumber = 20;
+/*
         boolean[] exist = new boolean[totalNumber];
         for (int i = 0; i < totalNumber; i++) {
             exist[i] = false;
@@ -99,19 +101,35 @@ public class Main {
             exist[num] = true;
             bPlusTree.insert(num, num * 100);
         }
-
+*/
+        for (int i = totalNumber; i >= 11; --i) {
+            bPlusTree.insert(i, i * 100);
+        }
         System.out.println();
 
-        //System.out.println("\n# linked list 연결 확인 #");
-        //bPlusTree.showAllLeafKeys();
+        System.out.println("\n# linked list 연결 확인 #");
+        bPlusTree.showAllLeafKeys();
+        System.out.println();
 
-        System.out.println("\n*\nsingle key search 시작!");
+        bPlusTree.delete(20); //20
+        System.out.println("# delete 20");
+        System.out.println(bPlusTree.singleKeySearch(19));
+
+        System.out.println("\n# delete 19");
+        bPlusTree.delete(19);
+
+        System.out.println(bPlusTree.singleKeySearch(17));
+
+        System.out.println("\n# show all trees");
+        bPlusTree.showAllLeafKeys();
+
+ /*       System.out.println("\n*\nsingle key search 시작!");
         int findNumber = rd.nextInt(totalNumber);
         System.out.println(bPlusTree.singleKeySearch(findNumber));
 
         System.out.println("\n*\nRange Search 시작!");
         System.out.println(bPlusTree.rangeSearch(50, 54));
-
+*/
         keyboard.close();
 
     }
