@@ -9,11 +9,13 @@ public class BPlusTree {
     private final int totalNumberOfKeys;
     private Node root;
     private final int divide_i;
+    private final int minNumberOfKeys;
 
     public BPlusTree(int degree) {
         this.degree = degree;
         this.totalNumberOfKeys = degree - 1;
         this.divide_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double) degree / 2) - 1;
+        this.minNumberOfKeys = (int) Math.ceil((double) degree / 2) - 1;
         root = new Node(totalNumberOfKeys, true, null);
     }
 
@@ -248,7 +250,7 @@ public class BPlusTree {
             System.out.println("The tree is empty.");
             return;
         }
-        
+
         //예외 처리2: 트리에 해당하는 노드가 없는 경우
         if (inputDeleteKey != searchLeafNode.getKey(target_i) || target_i >= searchLeafNode.getCurrentNumberOfKeys()) {
             System.out.println("There is no " + inputDeleteKey + " in the b+tree.");
@@ -256,12 +258,12 @@ public class BPlusTree {
         }
 
         //예외 처리3: 찾은 leaf node가 root인 경우(root만 있는 경우) -> divide_i와의 비교가 필요없기때문에 함수 종료
-        if (searchLeafNode == root) { 
+        if (searchLeafNode == root) {
             searchLeafNode.push_out(inputDeleteKey);
             return;
         }
 
-        if(searchLeafNode.getCurrentNumberOfKeys() > divide_i){
+        if(searchLeafNode.getCurrentNumberOfKeys() > minNumberOfKeys){
             //key가 많은 경우
             if (inputDeleteKey == searchLeafNode.getKey(0)) {
                 searchLeafNode.push_out(inputDeleteKey);
@@ -290,7 +292,7 @@ public class BPlusTree {
         boolean isZero = mainNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
         int indexOfChildInParentNode = mainNode.getParent().findIndexOfChild(deleteKey);
 
-        if (indexOfChildInParentNode > 0 && mainNode.getParent().getChildNode(indexOfChildInParentNode - 1).getCurrentNumberOfKeys() > divide_i) { //left sibling이 key를 빌려줄 수 있음
+        if (indexOfChildInParentNode > 0 && mainNode.getParent().getChildNode(indexOfChildInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //left sibling이 key를 빌려줄 수 있음
             System.out.println("왼쪽 형제 노드에서 빌려오기");
 
             Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode - 1);
@@ -304,7 +306,7 @@ public class BPlusTree {
             siblingNode.push_out(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1));
 
             mainNode.getParent().setKey(mainNode.getKey(0), indexOfChildInParentNode - 1);
-        } else if (indexOfChildInParentNode < mainNode.getParent().getCurrentNumberOfKeys() && mainNode.getParent().getChildNode(indexOfChildInParentNode + 1).getCurrentNumberOfKeys() > divide_i) { //right sibiling 존재, 빌려올 수 있음
+        } else if (indexOfChildInParentNode < mainNode.getParent().getCurrentNumberOfKeys() && mainNode.getParent().getChildNode(indexOfChildInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //right sibiling 존재, 빌려올 수 있음
             System.out.println("오른쪽 형제 노드에서 빌려오기");
             Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode + 1);
 
@@ -324,7 +326,7 @@ public class BPlusTree {
     }
 
     //borrow가 안되는 경우 실행됨
-    public void merge(Node mainDeleteNode, int deleteKey){        
+    public void merge(Node mainDeleteNode, int deleteKey){
         //TODO:merge 구현
         /**
          * 아.. 잠시만 와다다 정리해봄
@@ -345,7 +347,7 @@ public class BPlusTree {
          *      (1) mainDeleteNode에서 deleteKey를 push_out해줌
          *      (2) 빼고나서 mainDeleteNode에 key가 없으면(0개면) getParent.childNode[indexInParentNode + 1]에 mainDeleteKey에 남은 값 push하는거 관둠(해야되면 반복문으로 끝까지 push)
          *      (3) parentNode의 keys에서 siblingNode의 [0]번째 key값을 push_out해줌
-         *      
+         *
          *  2. merge 안되면 부모 노드가 부모의 sibling에서 빌려올수있는지 확인 //TODO
          */
 
@@ -355,7 +357,7 @@ public class BPlusTree {
         int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(deleteKey); //TODO: parent가 null인 경우 예외 처리
 
         //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우
-        if(degree == 3 && mainDeleteNode.getParent().getCurrentNumberOfKeys() > divide_i) {
+        if(degree <= 4 && mainDeleteNode.getParent().getCurrentNumberOfKeys() > minNumberOfKeys) {
             //TODO: degree == 3인 경우
             if(indexOfChildInParentNode == 0){
                 //오른쪽에 merge: sibling이 사라짐
@@ -377,7 +379,7 @@ public class BPlusTree {
         }
 
         //degree >= 4인 경우
-        else if (mainDeleteNode.getParent().getCurrentNumberOfKeys() > divide_i) {
+        else if (mainDeleteNode.getParent().getCurrentNumberOfKeys() > minNumberOfKeys) {
             if(indexOfChildInParentNode == 0){
                 //오른쪽에 merge: sibling이 사라짐
                 Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);

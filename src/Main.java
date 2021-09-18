@@ -74,7 +74,7 @@ public class Main {
 */
         Scanner keyboard = new Scanner(System.in);
         //int degree = keyboard.nextInt();
-        int degree = 3; //child(가지) 개수
+        int degree = 6; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
         int totalNumber = 20;
@@ -95,7 +95,7 @@ public class Main {
             bPlusTree.insert(num, num * 100);
         }
 */
-        for (int i = totalNumber; i > 2; --i) {
+        for (int i = totalNumber; i > 0; --i) {
             bPlusTree.insert(i, i * 100);
         }
 
@@ -112,7 +112,7 @@ public class Main {
         System.out.println("\n*\nRange Search 시작!");
         bPlusTree.rangeSearch(-1,1);
 */
-        int[] deleteKeys = {3, 4, 8,5};
+        int[] deleteKeys = {5,7,4,6,8};
 
         for (int i = 0; i < deleteKeys.length; i++) {
             System.out.println("\n# delete " + deleteKeys[i]);
