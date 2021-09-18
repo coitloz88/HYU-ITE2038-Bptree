@@ -45,7 +45,13 @@ public class Node {
     }
 
     public int getKey(int i) {
-        if(i >= currentNumberOfKeys) System.err.println("getKey(): Ouf of bound");
+        if(i >= currentNumberOfKeys){
+            System.out.println(" ** 초과한 key를 요청한 node **");
+            showKeys();
+            System.out.println(" ** 초과 보여주기 끝! **");
+            System.err.println("getKey(): Ouf of bound");
+        }
+
         return keys[i];
     }
 
@@ -151,6 +157,7 @@ public class Node {
         }
 
         int target_i = findIndexOfKeyInKeyArray(key); //[target_i]에 key가 위치한다. 이를 삭제해줄 예정
+
         if (leaf) {
             //leaf일때
             if (target_i == currentNumberOfKeys - 1) {
@@ -164,14 +171,27 @@ public class Node {
             }
         } else {
             //leaf가 아닐때(delete할때)
-            if (target_i == currentNumberOfKeys - 1) {
+            int target_i_child = findIndexOfChild(key);
+            if (target_i_child >= currentNumberOfKeys) {
                 keys[target_i] = 0;
-                childNodes[target_i + 1] = null;
-            } else {
+                if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0) , 0);
+                childNodes[target_i_child] = null;
+            } else if(target_i_child == 0){
+                if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child].setChildNode(childNodes[target_i_child + 1].getChildNode(0),0);
                 for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
                     keys[i] = keys[i + 1];
+                }
+                for (int i = target_i_child + 1; i < currentNumberOfKeys; i++) {
                     childNodes[i] = childNodes[i + 1];
-                } childNodes[currentNumberOfKeys - 1] = childNodes[currentNumberOfKeys];
+                }
+            } else {
+                if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0) , 0);
+                for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
+                    keys[i] = keys[i + 1];
+                }
+                for (int i = target_i_child; i < currentNumberOfKeys; i++) {
+                    childNodes[i] = childNodes[i + 1];
+                }
             }
         }
         --currentNumberOfKeys;
