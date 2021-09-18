@@ -99,7 +99,6 @@ public class Main {
             bPlusTree.insert(i, i * 100);
         }
 
-
         System.out.println("insert 종료\n");
         //System.out.println("\n# linked list 연결 확인 #");
         //bPlusTree.showAllLeafKeys();
@@ -113,7 +112,7 @@ public class Main {
         System.out.println("\n*\nRange Search 시작!");
         bPlusTree.rangeSearch(-1,1);
 */
-        int[] deleteKeys = {6,5,4,7,11,13};
+        int[] deleteKeys = {3, 4, 8,5};
 
         for (int i = 0; i < deleteKeys.length; i++) {
             System.out.println("\n# delete " + deleteKeys[i]);

@@ -176,15 +176,15 @@ public class Node {
                 keys[target_i] = 0;
                 if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0) , 0);
                 childNodes[target_i_child] = null;
-            } else if(target_i_child == 0){
+            } else if(target_i_child == 0){ //0번째 child에서 값을 빼는 경우, 해당 deleteKey값과 child+1번째 node가 사라진다(sibling이 사라짐)
                 if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child].setChildNode(childNodes[target_i_child + 1].getChildNode(0),0);
                 for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
                     keys[i] = keys[i + 1];
                 }
-                for (int i = target_i_child + 1; i <= currentNumberOfKeys; i++) {
+                for (int i = target_i_child + 1; i < currentNumberOfKeys; i++) {
                     childNodes[i] = childNodes[i + 1];
                 }
-            } else {
+            } else { //1번째 이상의 child에서 값을 빼는 경우, child번째 node가 사라진다(mainDeleteNode가 사라짐)
                 if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0) , 0);
                 for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
                     keys[i] = keys[i + 1];
