@@ -415,15 +415,74 @@ public class BPlusTree {
         else {
             //TODO: merge 안되는 경우
             // merge도 boolean으로 넣어서 처리? 아니면 redistribute로 바로 넘겨줌?
-            redistribute();
+            redistribute(mainDeleteNode, deleteKey);
         }
 
 
     }
 
-    public void redistribute(){
+    public void redistribute(Node mainDeleteNode, int deleteKey){
         //TODO:redistribute 구현
+        /**
+         * 부모 노드(parentNode(mainNode))에도 노드가 부족한 상황(currentNumberOfKeys <= minNumOfKeys)
+         * 1. parentNode의 siblingNode 확인
+         *  (1) parentNode
+         */
+
+        Node parentNode = mainDeleteNode.getParent();
+
+        while(!(parentNode == root)){
+            parentNode = mainDeleteNode.getParent();
+            boolean isZeroInChild = mainDeleteNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
+            boolean isZeroInParent = parentNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
+            int indexOfChildInParentNode = parentNode.findIndexOfChild(deleteKey); //부모 노드에서 deleteKey의 자식 순서
+            int indexOfParentInSuperParentNode = parentNode.getParent().findIndexOfChild(deleteKey); //부모부모 노드에서 deleteKey의 자식 순서
+
+            Node childSiblingNode;
+            //0. child에서, 왼쪽으로 merge할지 오른쪽으로 merge할지 정하고 merge해둠(1과 통합)
+            if(indexOfChildInParentNode == 0){
+                //child는 오른쪽 노드와 병합해둠
+
+
+            }
+            else{
+                //child는 child의 왼쪽 노드와 병합해둠
+            }
+            // => parentNode 밑은 정리 완료
+
+            if(indexOfParentInSuperParentNode > 0 && parentNode.getParent().getChildNode(indexOfParentInSuperParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys){
+                //왼쪽부모형제에서 빌려옴
+
+            }
+            else if(indexOfParentInSuperParentNode < parentNode.getParent().getCurrentNumberOfKeys() && parentNode.getParent().getChildNode(indexOfParentInSuperParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) {
+                //오른쪽부모형제에서 빌려옴
+
+                Node parentSiblingNode = parentNode.getParent().getChildNode(indexOfParentInSuperParentNode + 1);
+                /**
+                 * 1. 해당하는 deleteKey를 leaf노드에서 지우고 merge해둠(왼쪽 leaf로 몰아주기)
+                 * 2. if(isZero)일 경우 interalNode를 mainDeleteNode[1]로 대체
+                 * 3. parentNode.getParent().getKey(parentNode.getParent().findIndexKeys(deleteKey))를 가져와서 parentNode의 알맞은 자리에 set
+                 * 4. parentNode.getParent()의 빈 곳에는 parent의 sibling의 [0]번째 key가 온다
+                 * 5. parentNode의 형제 노드의 [0]번째 자식을 parentNode자식으로 데려온다(자식의 parent도 수정해줄것!!)
+                 * 6. 부모형제노드의 key와 node를 한칸씩땡겨주고(node는 한번더!) 빈자리는 null로 설정, currentNumberOfKeys도 -1 해준다.
+                 */
+            }
+            //빌릴수없는경우..
+            //else parentNode = parentNode.getParent();
+        }
+
+        /**
+         * (1) root에 key가 2개 이상인 경우
+         *      root에서 key를 내려줌
+         * (2) root에 key가 1개인 경우
+         *      노드의 높이를 낮춤
+         */
+
+
     }
+
+
+
 
     public void showAllLeafKeys() {
         Node tmpNode = singleKeySearchNode(0, false);
