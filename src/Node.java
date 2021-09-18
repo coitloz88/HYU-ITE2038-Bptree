@@ -181,7 +181,7 @@ public class Node {
                 for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
                     keys[i] = keys[i + 1];
                 }
-                for (int i = target_i_child + 1; i < currentNumberOfKeys; i++) {
+                for (int i = target_i_child + 1; i <= currentNumberOfKeys; i++) {
                     childNodes[i] = childNodes[i + 1];
                 }
             } else {

@@ -74,7 +74,7 @@ public class Main {
 */
         Scanner keyboard = new Scanner(System.in);
         //int degree = keyboard.nextInt();
-        int degree = 5; //child(가지) 개수
+        int degree = 3; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
         int totalNumber = 20;
@@ -95,12 +95,10 @@ public class Main {
             bPlusTree.insert(num, num * 100);
         }
 */
-        for (int i = totalNumber; i > 0; --i) {
+        for (int i = totalNumber; i > 2; --i) {
             bPlusTree.insert(i, i * 100);
         }
 
-        bPlusTree.insert(21, 21 * 100);
-        bPlusTree.insert(22, 22 * 100);
 
         System.out.println("insert 종료\n");
         //System.out.println("\n# linked list 연결 확인 #");
@@ -115,13 +113,13 @@ public class Main {
         System.out.println("\n*\nRange Search 시작!");
         bPlusTree.rangeSearch(-1,1);
 */
-        int[] deleteKeys = {17,22,18};
+        int[] deleteKeys = {6,5,4,7,11,13};
 
         for (int i = 0; i < deleteKeys.length; i++) {
             System.out.println("\n# delete " + deleteKeys[i]);
             bPlusTree.delete(deleteKeys[i]);
-            System.out.println("\n# delete " + deleteKeys[i] + " done\n");
             bPlusTree.showAllLeafKeys();
+            System.out.println("\n# delete " + deleteKeys[i] + " done\n");
         }
 
         keyboard.close();

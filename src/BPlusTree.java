@@ -291,10 +291,12 @@ public class BPlusTree {
         int indexOfChildInParentNode = mainNode.getParent().findIndexOfChild(deleteKey);
 
         if (indexOfChildInParentNode > 0 && mainNode.getParent().getChildNode(indexOfChildInParentNode - 1).getCurrentNumberOfKeys() > divide_i) { //left sibling이 key를 빌려줄 수 있음
+            System.out.println("왼쪽 형제 노드에서 빌려오기");
+
             Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode - 1);
             if(isZero){
                 Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                if(!internalNode.isLeaf()) internalNode.setKey(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                internalNode.setKey(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
             }
 
             mainNode.push_out(deleteKey);
@@ -303,11 +305,13 @@ public class BPlusTree {
 
             mainNode.getParent().setKey(mainNode.getKey(0), indexOfChildInParentNode - 1);
         } else if (indexOfChildInParentNode < mainNode.getParent().getCurrentNumberOfKeys() && mainNode.getParent().getChildNode(indexOfChildInParentNode + 1).getCurrentNumberOfKeys() > divide_i) { //right sibiling 존재, 빌려올 수 있음
+            System.out.println("오른쪽 형제 노드에서 빌려오기");
             Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode + 1);
 
             if(isZero){
                 Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                internalNode.setKey(mainNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                if(degree == 3) internalNode.setKey(siblingNode.getKey(0) , internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                else internalNode.setKey(mainNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
             }
 
             mainNode.push_out(deleteKey);
@@ -344,9 +348,12 @@ public class BPlusTree {
          *      
          *  2. merge 안되면 부모 노드가 부모의 sibling에서 빌려올수있는지 확인 //TODO
          */
+
+
         boolean isZero = mainDeleteNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
         int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(deleteKey); //TODO: parent가 null인 경우 예외 처리
 
+        //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우
         if(mainDeleteNode.getParent().getCurrentNumberOfKeys() > divide_i){ //merge 가능
             if(indexOfChildInParentNode == 0){
                 System.out.println("오른쪽 형제 노드에 merge");
@@ -354,32 +361,43 @@ public class BPlusTree {
                 Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
                 if (isZero) {
                     Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                    internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                    if(!internalNode.isLeaf()){
+                        if(degree == 3){
+                            internalNode.setKey(siblingNode.getKey(0), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                            mainDeleteNode.getParent().push_out(mainDeleteNode.getKey(0));
+                        }
+                        else internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                     }
                 }
                 mainDeleteNode.push_out(deleteKey);
                 for(int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++){
                     mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
                 }
-                mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
+                if(degree != 3) mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
             } else {
                 System.out.println("왼쪽 형제 노드에 merge");
                 Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
 
                 if(isZero){
                     Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                    internalNode.setKey(mainDeleteNode.getKey(1) , internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                    if(degree == 3){
+                        internalNode.setKey(siblingNode.getKey(0), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                        mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
+                    }
+                    else internalNode.setKey(mainDeleteNode.getKey(1) , internalNode.findIndexOfKeyInKeyArray(deleteKey));
                 }
 
                 mainDeleteNode.push_out(deleteKey);
                 for(int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++){
                     siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
                 }
-                mainDeleteNode.getParent().push_out(mainDeleteNode.getKey(0));
+                if(degree != 3) mainDeleteNode.getParent().push_out(mainDeleteNode.getKey(0));
 
             }
         } else {
             //TODO: merge 안되는 경우
             // merge도 boolean으로 넣어서 처리? 아니면 redistribute로 바로 넘겨줌?
+            redistribute();
         }
 
 
