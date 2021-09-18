@@ -111,14 +111,14 @@ public class Main {
         System.out.println("\n*\nRange Search 시작!");
         bPlusTree.rangeSearch(-1,1);
 */
-        System.out.println("\n# delete 9 , 2");
-        bPlusTree.delete(9);
-        bPlusTree.delete(2);
+        int[] deleteKeys = {7, 6, 5};
 
-        System.out.println("\n# delete 11");
-        bPlusTree.delete(11);
-        bPlusTree.showAllLeafKeys();
-
+        for (int i = 0; i < deleteKeys.length; i++) {
+            System.out.println("\n# delete " + deleteKeys[i]);
+            bPlusTree.delete(deleteKeys[i]);
+            System.out.println("\n# delete " + deleteKeys[i] + " done\n");
+            bPlusTree.showAllLeafKeys();
+        }
 
         keyboard.close();
 

@@ -45,10 +45,12 @@ public class Node {
     }
 
     public int getKey(int i) {
+        if(i >= currentNumberOfKeys) System.err.println("getKey(): Ouf of bound");
         return keys[i];
     }
 
     public void setKey(int key, int i) {
+        if(i >= keys.length) System.err.println("setKey(): Ouf of bound");
         keys[i] = key;
     }
 

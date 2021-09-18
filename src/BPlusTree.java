@@ -289,7 +289,13 @@ public class BPlusTree {
         boolean isZero = mainNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
         int indexInParentNode = mainNode.getParent().findIndexOfKeyInKeyArray(deleteKey);
         if (indexInParentNode > 0 && mainNode.getParent().getChildNode(indexInParentNode - 1).getCurrentNumberOfKeys() > divide_i) { //left sibling이 key를 빌려줄 수 있음
+
             Node siblingNode = mainNode.getParent().getChildNode(indexInParentNode - 1);
+
+            if(isZero){
+                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                internalNode.setKey(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+            }
 
             mainNode.push_out(deleteKey);
             mainNode.push(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), siblingNode.getValue(siblingNode.getCurrentNumberOfKeys() - 1));
@@ -298,13 +304,16 @@ public class BPlusTree {
             indexInParentNode = indexInParentNode >= mainNode.getParent().getCurrentNumberOfKeys() ? indexInParentNode - 1 : indexInParentNode;
             mainNode.getParent().setKey(mainNode.getKey(0), indexInParentNode);
 
+            return true;
+
+        } else if (indexInParentNode < mainNode.getParent().getCurrentNumberOfKeys() - 1 && mainNode.getParent().getChildNode(indexInParentNode + 2).getCurrentNumberOfKeys() > divide_i) { //right sibiling 존재, 빌려올 수 있음
+
+            Node siblingNode = mainNode.getParent().getChildNode(indexInParentNode + 1);
+
             if(isZero){
                 Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                internalNode.setKey(mainNode.getKey(0), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                internalNode.setKey(mainNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
             }
-
-        } else if (indexInParentNode < mainNode.getParent().getCurrentNumberOfKeys() && mainNode.getParent().getChildNode(indexInParentNode + 1).getCurrentNumberOfKeys() > divide_i) { //right sibiling 존재, 빌려올 수 있음
-            Node siblingNode = mainNode.getParent().getChildNode(indexInParentNode + 1);
 
             mainNode.push_out(deleteKey);
             mainNode.push(siblingNode.getKey(0), siblingNode.getValue(0));
@@ -312,13 +321,10 @@ public class BPlusTree {
             indexInParentNode = indexInParentNode >= mainNode.getParent().getCurrentNumberOfKeys() ? indexInParentNode - 1 : indexInParentNode;
             mainNode.getParent().setKey(siblingNode.getKey(0), indexInParentNode);
 
-            if(isZero){
-                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                internalNode.setKey(mainNode.getKey(0), internalNode.findIndexOfKeyInKeyArray(deleteKey));
-            }
+            return true;
 
         } else return false;
-        return true;
+
     }
 
     public void merge(Node mainDeleteNode, int deleteKey){
