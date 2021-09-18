@@ -77,8 +77,8 @@ public class Main {
         int degree = 5; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
-        int totalNumber = 20;
-/*
+ /*       int totalNumber = 30;
+
         boolean[] exist = new boolean[totalNumber];
         for (int i = 0; i < totalNumber; i++) {
             exist[i] = false;
@@ -92,18 +92,50 @@ public class Main {
                 num = rd.nextInt(totalNumber);
             }
             exist[num] = true;
-            bPlusTree.insert(num, num * 100);
+            bPlusTree.insert(num * 2, num * 2 * 100);
+            System.out.println("bPlusTree.insert(" + (num*2) + ");");
         }
 */
-        for (int i = totalNumber; i > 0; --i) {
+        bPlusTree.insert(14,1400);
+        bPlusTree.insert(46, 4600);
+        bPlusTree.insert(42, 4200);
+        bPlusTree.insert(10, 1000);
+        bPlusTree.insert(16, 1600);
+        bPlusTree.insert(8, 800);
+        bPlusTree.insert(40, 4000);
+        bPlusTree.insert(44, 4400);
+        bPlusTree.insert(50, 5000);
+        bPlusTree.insert(24, 2400);
+        bPlusTree.insert(52, 5200);
+        bPlusTree.insert(26, 2600);
+        bPlusTree.insert(20, 2000);
+        bPlusTree.insert(6, 600);
+        bPlusTree.insert(12, 1200);
+        bPlusTree.insert(56, 5600);
+        bPlusTree.insert(54, 5400);
+        bPlusTree.insert(4, 400);
+        bPlusTree.insert(30, 300);
+        bPlusTree.insert(22, 2200);
+        bPlusTree.insert(36, 3600);
+        bPlusTree.insert(58, 5800);
+        bPlusTree.insert(32, 3200);
+        bPlusTree.insert(2, 200);
+        bPlusTree.insert(18, 1800);
+        bPlusTree.insert(0,0);
+        bPlusTree.insert(34,3400);
+        bPlusTree.insert(28,2800);
+        bPlusTree.insert(38,3800);
+        bPlusTree.insert(48,4800);
+        bPlusTree.insert(41,4100);
+        bPlusTree.insert(60,6000);
+/*        for (int i = totalNumber + 1; i <= totalNumber * 2; i++) {
             bPlusTree.insert(i, i * 100);
         }
-        bPlusTree.insert(21,2100);
-        bPlusTree.insert(22,2200);
+*/
 
         System.out.println("insert 종료\n");
-        //System.out.println("\n# linked list 연결 확인 #");
-        //bPlusTree.showAllLeafKeys();
+        System.out.println("\n# linked list 연결 확인 #");
+        bPlusTree.showAllLeafKeys();
         //System.out.println();
 /*
 
@@ -114,20 +146,25 @@ public class Main {
         System.out.println("\n*\nRange Search 시작!");
         bPlusTree.rangeSearch(-1,1);
 */
-        int[] deleteKeys = {5,7,9,6,13,16,12};
 
-        for (int i = 0; i < deleteKeys.length; i++) {
-            System.out.println("\n# delete " + deleteKeys[i]);
-            bPlusTree.delete(deleteKeys[i]);
+        int inputNum = 0;
+
+        while(inputNum != 100){
+            System.out.print("\n지울 키를 입력하세요(1~20), 100입력시 종료: ");
+            inputNum = keyboard.nextInt();
+            bPlusTree.delete(inputNum);
             bPlusTree.showAllLeafKeys();
-            System.out.println("\n# delete " + deleteKeys[i] + " done\n");
         }
 
-        System.out.println("**** search ****");
-        bPlusTree.singleKeySearch(15);
-        bPlusTree.singleKeySearch(11);
-        System.out.println("**** range search ****");
-        bPlusTree.rangeSearch(8,23);
+        System.out.print("\n*** search 할 key 입력(1000입력시 종료): ");
+        inputNum = keyboard.nextInt();
+        inputNum = keyboard.nextInt();
+
+            bPlusTree.singleKeySearch(inputNum);
+
+
+        System.out.println("\n# linked list 연결 확인 #");
+        bPlusTree.showAllLeafKeys();
 
         keyboard.close();
 
