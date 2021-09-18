@@ -87,6 +87,13 @@ public class Node {
         return index;
     }
 
+    public int findIndexOfChild(int input){
+        int index;
+        for (index = 0; index < currentNumberOfKeys && input >= keys[index]; index++) {
+        } //input이 모든 key값보다 크거나 같으면 keys 크기를 1 초과하는 값을 가짐
+        return index;
+    }
+
     //leaf에 삽입시 key-value 오름차순 정렬 삽입, parent삽입시..코드참고
     public void push(int key, int value) {
 
