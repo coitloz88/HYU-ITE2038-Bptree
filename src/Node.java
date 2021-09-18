@@ -93,10 +93,20 @@ public class Node {
         return index;
     }
 
+    public int findSmallIndexOfKeyInKeys(int input){
+        if(input <= keys[0]) return 0;
+        int index;
+        for (index = 0; index < currentNumberOfKeys && input >= keys[index]; index++) {
+        }
+        index--;
+        ;
+        return index;
+    }
+
     public int findIndexOfChild(int input){
         int index;
         for (index = 0; index < currentNumberOfKeys && input >= keys[index]; index++) {
-        } //input이 모든 key값보다 크거나 같으면 keys 크기를 1 초과하는 값을 가짐
+        }
         return index;
     }
 
@@ -150,7 +160,6 @@ public class Node {
         }
     }
 
-    //단순 delete할때 호출
     public void push_out(int key) {
         if (currentNumberOfKeys == 0) {
             System.err.println("push_out() 오류: key가 없음");
