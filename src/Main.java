@@ -98,8 +98,6 @@ public class Main {
         for (int i = totalNumber; i > 0; --i) {
             bPlusTree.insert(i, i * 100);
         }
-        bPlusTree.insert(21,2100);
-        bPlusTree.insert(22,2200);
 
         System.out.println("insert 종료\n");
         //System.out.println("\n# linked list 연결 확인 #");
@@ -114,7 +112,7 @@ public class Main {
         System.out.println("\n*\nRange Search 시작!");
         bPlusTree.rangeSearch(-1,1);
 */
-        int[] deleteKeys = {5,7,9,6,13,16,12};
+        int[] deleteKeys = {19,15,18};
 
         for (int i = 0; i < deleteKeys.length; i++) {
             System.out.println("\n# delete " + deleteKeys[i]);
