@@ -1,6 +1,9 @@
 import java.io.*;
 
 public class Main {
+
+    static Node previousNode = null;
+
     public static void main(String[] args) {
         /**
          * command line argument 예시
@@ -16,99 +19,63 @@ public class Main {
          *  java bptree -r index.dat 100 200
          */
 
-/*
         if (args[0].equals("-c")) {
-            //data file creation
             try {
-                BPlusTree bPlusTree = new BPlusTree(Integer.parseInt(args[2]));
-                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[1]));
-                indexDAT.writeObject(bPlusTree);
-                indexDAT.close();
+                FileWriter fw = new FileWriter(args[1]);
+                fw.write(args[2]);
+                fw.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else if (args[0].equals("-i")) {
             //insert
+            BPlusTree bPlusTree = readTree(args[1]);
             try {
-                ObjectInputStream inputIndexDAT = new ObjectInputStream(new FileInputStream(args[1]));
-                BPlusTree bPlusTree = (BPlusTree) inputIndexDAT.readObject();
                 BufferedReader bufferInputCSV = new BufferedReader(new FileReader(args[2]));
-
                 String line = null;
-
                 while ((line = bufferInputCSV.readLine()) != null) {
                     String[] parsedData = line.split(",");
                     bPlusTree.insert(Integer.parseInt(parsedData[0]), Integer.parseInt(parsedData[1]));
                 }
-
-                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[1]));
-                indexDAT.writeObject(bPlusTree);
-                indexDAT.close();
-                inputIndexDAT.close();
+                bPlusTree.saveTree(args[1]);
                 bufferInputCSV.close();
 
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
             }
+
 
         } else if (args[0].equals("-d")) {
             //deletion
-
+            BPlusTree bPlusTree = readTree(args[1]);
             try {
-                ObjectInputStream inputIndexDAT = new ObjectInputStream(new FileInputStream(args[1]));
-                BPlusTree bPlusTree = (BPlusTree) inputIndexDAT.readObject();
-                BufferedReader bufferInputCSV = new BufferedReader(new FileReader(args[2]));
-
+                BufferedReader bufferDeleteCSV = new BufferedReader(new FileReader(args[2]));
                 String line = null;
 
-                while ((line = bufferInputCSV.readLine()) != null) {
+                while ((line = bufferDeleteCSV.readLine()) != null) {
                     bPlusTree.delete(Integer.parseInt(line));
                 }
+                bPlusTree.saveTree(args[1]);
+                bufferDeleteCSV.close();
 
-                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[1]));
-                indexDAT.writeObject(bPlusTree);
-                indexDAT.close();
-                inputIndexDAT.close();
-                bufferInputCSV.close();
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
             }
+
+
         } else if (args[0].equals("-s")) { //singleKeySearch
-
-            try {
-                ObjectInputStream indexDAT = new ObjectInputStream(new FileInputStream(args[1]));
-                BPlusTree bPlusTree = (BPlusTree) indexDAT.readObject();
-                bPlusTree.singleKeySearch(Integer.parseInt(args[2]));
-                indexDAT.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-
+            BPlusTree bPlusTree = readTree(args[1]);
+            bPlusTree.singleKeySearch(Integer.parseInt(args[2]));
         } else if (args[0].equals("-r")) {//range search
-
-            try {
-                ObjectInputStream indexDAT = new ObjectInputStream(new FileInputStream(args[1]));
-                BPlusTree bPlusTree = (BPlusTree) indexDAT.readObject();
-                bPlusTree.rangeSearch(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
-                indexDAT.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-
-
+            BPlusTree bPlusTree = readTree(args[1]);
+            bPlusTree.rangeSearch(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+        } else {
+            System.out.println("wrong input");
         }
-*/
+
 
 /*        int degree = 5; //child(가지) 개수
-        BPlusTree bPlusTree = new BPlusTree(degree);
+        BPlusTree bPlusTree = new BPlusTree(degree, new Node(degree - 1, true, null));
         int totalNumber = 20;
         for (int i = 0; i < totalNumber; i++) {
             bPlusTree.insert(i, i * 100);
@@ -116,10 +83,10 @@ public class Main {
 
         bPlusTree.saveTree("output.txt");
 */
-
+/*
         BPlusTree bPlusTree = readTree("output.txt");
         bPlusTree.saveTree("output2.txt");
-
+*/
     }
 
     public static BPlusTree readTree(String indexFile){
@@ -131,27 +98,35 @@ public class Main {
             String line = br.readLine(); // root 정보를 읽음
 
             if(line == null){
+                bPlusTree = new BPlusTree(degree, new Node(degree - 1, true, null));
                 br.close();
                 return bPlusTree;
             }
             else {
-                boolean isLeaf = line.charAt(6) == 1;
-                String[] datas = line.substring(9).split("/");
-                Node root = new Node(degree, isLeaf, null);
-                bPlusTree = new BPlusTree(degree, root);
+                String[] totalDatas = line.split(" / ");
+                boolean isLeaf = totalDatas[0].equals("1");
+                Node root = new Node(totalDatas.length - 1, isLeaf, null);
                 if(isLeaf){
-                    for (int i = 0; i < datas.length; i++) {
-                        String[] keyValues = datas[i].split(" ");
-                        root.setKey(Integer.parseInt(keyValues[0]), i);
-                        root.setValue(Integer.parseInt(keyValues[1]), i);;
+                    for (int i = 0; i < totalDatas.length - 1; i++) {
+                        String[] keyValues = totalDatas[i + 1].split(" ");
+                        root.setKey(Integer.parseInt(keyValues[0].replace(" ", "")), i);
+                        root.setValue(Integer.parseInt(keyValues[1].replace(" ", "")), i);;
                     }
                 } else {
-                    for (int i = 0; i < datas.length; i++) {
+                    for (int i = 0; i < totalDatas.length - 1; i++) {
+                        root.setKey(Integer.parseInt(totalDatas[i + 1].replace(" ", "")),i);
+
+                    }
+                    root.setCurrentNumberOfKeys(totalDatas.length - 1);
+                    for (int i = 0; i < totalDatas.length ; i++) {
                         readNode(br, root, i, degree - 1);
                     }
                 }
+                bPlusTree = new BPlusTree(degree, root);
             }
             br.close();
+            
+            //TODO: leaf 노드 연결?
             return bPlusTree;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -169,32 +144,26 @@ public class Main {
          */
         try {
             String line = br.readLine();
-            System.out.println(line);
-            if(line == null || line.equals("#")) return;
             String[] totalDatas = line.split(" / ");
-            String[] datas = totalDatas[0].split(" ");
-            boolean isLeaf = datas[3].equals("1");
-            /*
-            for (int i = 0; i < totalDatas.length - 1; i++) {
-                System.out.println(i + "번째 data: " + totalDatas[i]);
-            }*/
+            boolean isLeaf = totalDatas[0].equals("1");
+
             Node node = null;
             if (isLeaf) {
-                int count = 0;
-                do {
-                    Node childNode = new Node(totalNumberOfKeys, true, parentNode);
-                    for (int i = 0; i < totalDatas.length - 1; i++) {
-                        String[] keyValues = totalDatas[i + 1].split(" ");
-                        childNode.setKey(Integer.parseInt(keyValues[0].replace(" ","")), i);
-                        childNode.setValue(Integer.parseInt(keyValues[1].replace(" ","")), i);
-                    }
-                    childNode.setCurrentNumberOfKeys(totalDatas.length - 1);
-                    parentNode.setChildNode(childNode, count++);
-                } while (!(line = br.readLine()).equals("#"));
+                Node childNode = new Node(totalNumberOfKeys, true, parentNode);
+                for (int i = 0; i < totalDatas.length - 1; i++) {
+                    String[] keyValues = totalDatas[i + 1].split(" ");
+                    childNode.setKey(Integer.parseInt(keyValues[0].replace(" ", "")), i);
+                    childNode.setValue(Integer.parseInt(keyValues[1].replace(" ", "")), i);
+                }
+                childNode.setCurrentNumberOfKeys(totalDatas.length - 1);
+                parentNode.setChildNode(childNode, indexInParentNode);
+                if(previousNode != null) previousNode.setChildNode(childNode, 0);
+                previousNode = childNode;
+
             } else {
                 node = new Node(totalNumberOfKeys, false, parentNode);
                 for (int i = 0; i < totalDatas.length - 1; i++) {
-                    node.setKey(Integer.parseInt(totalDatas[i + 1].replace(" ","")), i);
+                    node.setKey(Integer.parseInt(totalDatas[i + 1].replace(" ", "")), i);
                 }
                 node.setCurrentNumberOfKeys(totalDatas.length - 1);
                 parentNode.setChildNode(node, indexInParentNode);

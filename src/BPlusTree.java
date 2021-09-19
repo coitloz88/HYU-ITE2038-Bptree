@@ -582,17 +582,16 @@ public class BPlusTree implements Serializable {
         int nodeNumber = ++nodeCount; //저장할 노드의 고유번호
 
         try {
-            fw.write("@ " + nodeNumber + " " + parentNodeNumber);
             if(node.isLeaf()){
                 //leaf node 저장
-                fw.write(" " + 1 + " / ");
+                fw.write(1 + " / ");
                 for (int i = 0; i < node.getCurrentNumberOfKeys(); i++) {
                     fw.write(node.getKey(i) + " " + node.getValue(i) + " / ");
                 }
                 fw.write("\n");
             } else {
                 //leaf가 아닌 노드 저장
-                fw.write(" " + 0 + " / ");
+                fw.write(0 + " / ");
                 for (int i = 0; i < node.getCurrentNumberOfKeys(); i++) {
                     fw.write(node.getKey(i) + " / ");
                 }
@@ -600,7 +599,7 @@ public class BPlusTree implements Serializable {
                 for (int i = 0; i <= node.getCurrentNumberOfKeys(); i++) {
                     saveNode(fw, node.getChildNode(i), nodeNumber);
                 }
-                fw.write("#\n");
+                //fw.write("#\n");
 
             }
 
