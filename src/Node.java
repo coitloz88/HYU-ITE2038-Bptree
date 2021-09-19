@@ -212,14 +212,10 @@ public class Node implements Serializable {
     }
 
     public void showKeys() {
-        System.out.println("@@ show keys @@");
         for (int i = 0; i < currentNumberOfKeys; i++) {
             if (i != 0) System.out.print(",");
-            System.out.print(keys[i] + " & value: " + values[i]);
+            System.out.print(keys[i]);
         }
-        System.out.println("");
-        if (parent == null) System.out.println("@@ parent is null @@\n");
-        else parent.showKeys();
     }
 
 }
