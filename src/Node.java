@@ -182,7 +182,7 @@ public class Node implements Serializable {
         } else {
             //leaf가 아닐때(delete할때)
             int target_i_child = findIndexOfChild(key);
-            if (target_i_child >= currentNumberOfKeys) {
+            if (currentNumberOfKeys > 1 && target_i_child >= currentNumberOfKeys) {
                 keys[target_i] = 0;
                 if (childNodes[target_i_child].isLeaf())
                     childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0), 0);
