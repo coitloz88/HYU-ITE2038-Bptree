@@ -46,7 +46,7 @@ public class BPlusTree implements Serializable {
             if (i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i))
                 return tmpNode;
             else tmpNode = tmpNode.getChildNode(i);
-            System.out.println("뭐지?");
+
         }
         return tmpNode;
     }
@@ -292,7 +292,6 @@ public class BPlusTree implements Serializable {
         int indexOfChildInParentNode = mainNode.getParent().findIndexOfChild(deleteKey);
 
         if (indexOfChildInParentNode > 0 && mainNode.getParent().getChildNode(indexOfChildInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //left sibling이 key를 빌려줄 수 있음
-            System.out.println("왼쪽 형제 노드에서 빌려오기");
 
             Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode - 1);
             if (isZero) {
@@ -306,7 +305,7 @@ public class BPlusTree implements Serializable {
 
             mainNode.getParent().setKey(mainNode.getKey(0), indexOfChildInParentNode - 1);
         } else if (indexOfChildInParentNode < mainNode.getParent().getCurrentNumberOfKeys() && mainNode.getParent().getChildNode(indexOfChildInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //right sibiling 존재, 빌려올 수 있음
-            System.out.println("오른쪽 형제 노드에서 빌려오기");
+
             Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode + 1);
 
             if (isZero) {
@@ -497,7 +496,7 @@ public class BPlusTree implements Serializable {
         // => parentNode 밑은 정리 완료된 채로 왔음!
 
         if (indexInParentNode > 0 && parentNode.getChildNode(indexInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys) {
-            System.out.println("왼쪽부모형제에서 빌려올 수 있는 경우(기본 경우)");
+
             Node siblingNode = parentNode.getChildNode(indexInParentNode - 1);
                 /*if(isZero){
                     Node internalNode = singleKeySearchInternalNode(deleteKey, false);
@@ -525,7 +524,7 @@ public class BPlusTree implements Serializable {
             siblingNode.setCurrentNumberOfKeys(siblingNode.getCurrentNumberOfKeys() - 1);
 
         } else if (indexInParentNode < parentNode.getCurrentNumberOfKeys() && parentNode.getChildNode(indexInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) {
-            System.out.println("오른쪽부모형제에서 빌려올 수 있는 경우");
+
             Node siblingNode = parentNode.getChildNode(indexInParentNode + 1);
             /**
              * 1. parentNode.findIndexOfKeyArrays(deleteKey)번째 값을 가져온다.
@@ -559,14 +558,6 @@ public class BPlusTree implements Serializable {
         }
 
 
-    }
-
-    public void showAllLeafKeys() {
-        Node tmpNode = singleKeySearchNode(0, false);
-        while (tmpNode != null) {
-            tmpNode.showKeys();
-            tmpNode = tmpNode.getChildNode(0);
-        }
     }
 
 }
