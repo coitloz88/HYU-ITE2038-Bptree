@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="bptree:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/bptree_jar</output-path>
+    <root id="archive" name="bptree.jar">
+      <element id="module-output" name="bptree" />
+    </root>
+  </artifact>
+</component>
