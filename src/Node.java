@@ -1,4 +1,6 @@
-public class Node {
+import java.io.Serializable;
+
+public class Node implements Serializable {
     /**
      * 0. leaf인지 아닌지
      * 1. m: # of keys
@@ -45,7 +47,7 @@ public class Node {
     }
 
     public int getKey(int i) {
-        if(i >= currentNumberOfKeys){
+        if (i >= currentNumberOfKeys) {
             System.out.println(" ** 초과한 key를 요청한 node **");
             showKeys();
             System.out.println(" ** 초과 보여주기 끝! **");
@@ -56,7 +58,7 @@ public class Node {
     }
 
     public void setKey(int key, int i) {
-        if(i >= keys.length) System.err.println("setKey(): Ouf of bound");
+        if (i >= keys.length) System.err.println("setKey(): Ouf of bound");
         keys[i] = key;
     }
 
@@ -93,17 +95,16 @@ public class Node {
         return index;
     }
 
-    public int findSmallIndexOfKeyInKeys(int input){
-        if(input <= keys[0]) return 0;
+    public int findSmallIndexOfKeyInKeys(int input) {
+        if (input <= keys[0]) return 0;
         int index;
         for (index = 0; index < currentNumberOfKeys && input >= keys[index]; index++) {
         }
         index--;
-        ;
         return index;
     }
 
-    public int findIndexOfChild(int input){
+    public int findIndexOfChild(int input) {
         int index;
         for (index = 0; index < currentNumberOfKeys && input >= keys[index]; index++) {
         }
@@ -181,12 +182,14 @@ public class Node {
         } else {
             //leaf가 아닐때(delete할때)
             int target_i_child = findIndexOfChild(key);
-            if (target_i_child >= currentNumberOfKeys) {
+            if (currentNumberOfKeys > 1 && target_i_child >= currentNumberOfKeys) {
                 keys[target_i] = 0;
-                if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0) , 0);
+                if (childNodes[target_i_child].isLeaf())
+                    childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0), 0);
                 childNodes[target_i_child] = null;
-            } else if(target_i_child == 0){ //0번째 child에서 값을 빼는 경우, 해당 deleteKey값과 child+1번째 node가 사라진다(sibling이 사라짐)
-                if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child].setChildNode(childNodes[target_i_child + 1].getChildNode(0),0);
+            } else if (target_i_child == 0) { //0번째 child에서 값을 빼는 경우, 해당 deleteKey값과 child+1번째 node가 사라진다(sibling이 사라짐)
+                if (childNodes[target_i_child].isLeaf())
+                    childNodes[target_i_child].setChildNode(childNodes[target_i_child + 1].getChildNode(0), 0);
                 for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
                     keys[i] = keys[i + 1];
                 }
@@ -194,7 +197,8 @@ public class Node {
                     childNodes[i] = childNodes[i + 1];
                 }
             } else { //1번째 이상의 child에서 값을 빼는 경우, child번째 node가 사라진다(mainDeleteNode가 사라짐)
-                if(childNodes[target_i_child].isLeaf()) childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0) , 0);
+                if (childNodes[target_i_child].isLeaf())
+                    childNodes[target_i_child - 1].setChildNode(childNodes[target_i_child].getChildNode(0), 0);
                 for (int i = target_i; i < currentNumberOfKeys - 1; i++) {
                     keys[i] = keys[i + 1];
                 }
@@ -208,14 +212,10 @@ public class Node {
     }
 
     public void showKeys() {
-        System.out.println("@@ show keys @@");
         for (int i = 0; i < currentNumberOfKeys; i++) {
             if (i != 0) System.out.print(",");
-            System.out.print(keys[i] + " & value: " + values[i]);
+            System.out.print(keys[i]);
         }
-        System.out.println("");
-        if(parent == null) System.out.println("@@ parent is null @@\n");
-        else parent.showKeys();
     }
 
 }
