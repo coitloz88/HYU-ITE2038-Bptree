@@ -34,10 +34,6 @@ public class Node implements Serializable {
         return leaf;
     }
 
-    public void setLeaf(boolean leaf) {
-        this.leaf = leaf;
-    }
-
     public int getCurrentNumberOfKeys() {
         return currentNumberOfKeys;
     }

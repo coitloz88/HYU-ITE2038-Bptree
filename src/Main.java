@@ -16,23 +16,24 @@ public class Main {
          * 5. program -r index_file start_key end_key
          *  java bptree -r index.dat 100 200
          */
-/*
-        if (args[2].equals("-c")) {
+
+
+        if (args[0].equals("-c")) {
             //data file creation
             try {
-                BPlusTree bPlusTree = new BPlusTree(Integer.parseInt(args[4]));
-                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[3]));
+                BPlusTree bPlusTree = new BPlusTree(Integer.parseInt(args[2]));
+                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[1]));
                 indexDAT.writeObject(bPlusTree);
                 indexDAT.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else if (args[2].equals("-i")) {
+        } else if (args[0].equals("-i")) {
             //insert
             try {
-                ObjectInputStream inputIndexDAT = new ObjectInputStream(new FileInputStream(args[3]));
+                ObjectInputStream inputIndexDAT = new ObjectInputStream(new FileInputStream(args[1]));
                 BPlusTree bPlusTree = (BPlusTree) inputIndexDAT.readObject();
-                BufferedReader bufferInputCSV = new BufferedReader(new FileReader(args[4]));
+                BufferedReader bufferInputCSV = new BufferedReader(new FileReader(args[2]));
 
                 String line = null;
 
@@ -41,7 +42,7 @@ public class Main {
                     bPlusTree.insert(Integer.parseInt(parsedData[0]), Integer.parseInt(parsedData[1]));
                 }
 
-                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[3]));
+                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[1]));
                 indexDAT.writeObject(bPlusTree);
                 indexDAT.close();
                 inputIndexDAT.close();
@@ -53,13 +54,13 @@ public class Main {
                 e.printStackTrace();
             }
 
-        } else if (args[2].equals("-d")) {
+        } else if (args[0].equals("-d")) {
             //deletion
 
             try {
-                ObjectInputStream inputIndexDAT = new ObjectInputStream(new FileInputStream(args[3]));
+                ObjectInputStream inputIndexDAT = new ObjectInputStream(new FileInputStream(args[1]));
                 BPlusTree bPlusTree = (BPlusTree) inputIndexDAT.readObject();
-                BufferedReader bufferInputCSV = new BufferedReader(new FileReader(args[4]));
+                BufferedReader bufferInputCSV = new BufferedReader(new FileReader(args[2]));
 
                 String line = null;
 
@@ -67,7 +68,7 @@ public class Main {
                     bPlusTree.delete(Integer.parseInt(line));
                 }
 
-                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[3]));
+                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[1]));
                 indexDAT.writeObject(bPlusTree);
                 indexDAT.close();
                 inputIndexDAT.close();
@@ -77,12 +78,12 @@ public class Main {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-        } else if (args[2].equals("-s")) { //singleKeySearch
+        } else if (args[0].equals("-s")) { //singleKeySearch
 
             try {
-                ObjectInputStream indexDAT = new ObjectInputStream(new FileInputStream(args[3]));
+                ObjectInputStream indexDAT = new ObjectInputStream(new FileInputStream(args[1]));
                 BPlusTree bPlusTree = (BPlusTree) indexDAT.readObject();
-                bPlusTree.singleKeySearch(Integer.parseInt(args[4]));
+                bPlusTree.singleKeySearch(Integer.parseInt(args[2]));
                 indexDAT.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -90,12 +91,12 @@ public class Main {
                 e.printStackTrace();
             }
 
-        } else if (args[2].equals("-r")) {//range search
+        } else if (args[0].equals("-r")) {//range search
 
             try {
-                ObjectInputStream indexDAT = new ObjectInputStream(new FileInputStream(args[3]));
+                ObjectInputStream indexDAT = new ObjectInputStream(new FileInputStream(args[1]));
                 BPlusTree bPlusTree = (BPlusTree) indexDAT.readObject();
-                bPlusTree.rangeSearch(Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+                bPlusTree.rangeSearch(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
                 indexDAT.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -105,8 +106,6 @@ public class Main {
 
 
         }
-*/
-        System.out.println("Hello JAVA!");
 
 /*
         try {
