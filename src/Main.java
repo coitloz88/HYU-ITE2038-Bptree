@@ -20,7 +20,7 @@ public class Main {
          * 5. program -r index_file start_key end_key
          *  java bptree -r index. dat 100 200
          */
-/*
+
         //TODO: command line argument 구현
         if(args[2].equals("-c")){
             //data file creation
@@ -71,13 +71,13 @@ public class Main {
 
             //range search
         }
-*/
+/*
         Scanner keyboard = new Scanner(System.in);
         //int degree = keyboard.nextInt();
         int degree = 5; //child(가지) 개수
         BPlusTree bPlusTree = new BPlusTree(degree);
 
- /*       int totalNumber = 30;
+        int totalNumber = 30;
 
         boolean[] exist = new boolean[totalNumber];
         for (int i = 0; i < totalNumber; i++) {
@@ -93,9 +93,9 @@ public class Main {
             }
             exist[num] = true;
             bPlusTree.insert(num * 2, num * 2 * 100);
-            System.out.println("bPlusTree.insert(" + (num*2) + ");");
+            System.out.println("bPlusTree.insert(" + (num*2) + "," + (num*2*100) +");");
         }
-*/
+
         bPlusTree.insert(14,1400);
         bPlusTree.insert(46, 4600);
         bPlusTree.insert(42, 4200);
@@ -128,16 +128,16 @@ public class Main {
         bPlusTree.insert(48,4800);
         bPlusTree.insert(41,4100);
         bPlusTree.insert(60,6000);
-/*        for (int i = totalNumber + 1; i <= totalNumber * 2; i++) {
+        for (int i = totalNumber + 1; i <= totalNumber * 2; i++) {
             bPlusTree.insert(i, i * 100);
         }
-*/
+
 
         System.out.println("insert 종료\n");
         System.out.println("\n# linked list 연결 확인 #");
         bPlusTree.showAllLeafKeys();
         //System.out.println();
-/*
+
 
         System.out.println("\n*\nsingle key search 시작!");
         int findNumber = rd.nextInt(totalNumber);
@@ -145,7 +145,7 @@ public class Main {
 
         System.out.println("\n*\nRange Search 시작!");
         bPlusTree.rangeSearch(-1,1);
-*/
+
 
         int inputNum = 0;
 
@@ -167,6 +167,6 @@ public class Main {
         bPlusTree.showAllLeafKeys();
 
         keyboard.close();
-
+*/
     }
 }

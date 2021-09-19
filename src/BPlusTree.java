@@ -1,4 +1,6 @@
-public class BPlusTree {
+import java.io.Serializable;
+
+public class BPlusTree implements Serializable {
     /**
      * degree: max degree(m-way)
      * <p>
@@ -348,91 +350,142 @@ public class BPlusTree {
          *      (2) 빼고나서 mainDeleteNode에 key가 없으면(0개면) getParent.childNode[indexInParentNode + 1]에 mainDeleteKey에 남은 값 push하는거 관둠(해야되면 반복문으로 끝까지 push)
          *      (3) parentNode의 keys에서 siblingNode의 [0]번째 key값을 push_out해줌
          *
-         *  2. merge 안되면 부모 노드가 부모의 sibling에서 빌려올수있는지 확인 //TODO
+         *  2. merge 안되면 부모 노드가 부모의 sibling에서 빌려올수있는지 확인
          */
 
         //merge될때, 왼쪽 기준이 살아남음
 
         boolean isZero = mainDeleteNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
-        int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(deleteKey); //TODO: parent가 null인 경우 예외 처리
+        int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(deleteKey);
 
-        //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우
-/*        if(degree <= 4 && mainDeleteNode.getParent().getCurrentNumberOfKeys() > minNumberOfKeys) {
-            //TODO: degree == 3인 경우
-            if(indexOfChildInParentNode == 0){
+        //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우 //TODO: degree 제외 제한조건 지우기
+        if (degree <= 4) {
+            if (indexOfChildInParentNode == 0) {
                 //오른쪽에 merge: sibling이 사라짐
                 Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
                 Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                if(!internalNode.isLeaf()){
+                if (!internalNode.isLeaf()) {
                     internalNode.setKey(siblingNode.getKey(0), internalNode.findIndexOfKeyInKeyArray(deleteKey));
                 }
                 mainDeleteNode.push_out(deleteKey);
-                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++) mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
+                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++)
+                    mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
                 mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
             } else {
                 //왼쪽에 merge: mainDeleteNode가 사라짐
                 Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
                 mainDeleteNode.push_out(deleteKey);
-                for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++) siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
+                for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++)
+                    siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
                 mainDeleteNode.getParent().push_out(deleteKey);
             }
         }
 
         //degree >= 4인 경우
-      */
-        if (indexOfChildInParentNode == 0) {
-            //오른쪽에 merge: sibling이 사라짐
-            Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
-            if (isZero) {
-                //internal Node에 해당하는 deleteKey순서의 값 변경
-                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                //예외처리: 최솟값을 지우는 경우 - 필요없나?
-                if (!internalNode.isLeaf()) {
+        else {
+            if (indexOfChildInParentNode == 0) {
+                //오른쪽에 merge: sibling이 사라짐
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
+                if (isZero) {
+                    //internal Node에 해당하는 deleteKey순서의 값 변경
+                    Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                    //예외처리: 최솟값을 지우는 경우 - 필요없나?
+                    if (!internalNode.isLeaf()) {
+                        internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+                    }
+                }
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++)
+                    mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
+                mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
+
+            } else {
+                //왼쪽에 merge
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
+                if (isZero) {
+                    //최솟값이 아닌 deleteKey, internal Node에서 해당하는 deleteKey 순서의 값 변경
+                    Node internalNode = singleKeySearchInternalNode(deleteKey, false);
                     internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
                 }
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++)
+                    siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
+                mainDeleteNode.getParent().push_out(mainDeleteNode.getKey(0));
             }
-            mainDeleteNode.push_out(deleteKey);
-            for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++)
-                mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
-            mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
+        }
+        if (mainDeleteNode.getParent().getCurrentNumberOfKeys() < minNumberOfKeys) {
+            if (degree < 5) redistribute_small(mainDeleteNode.getParent(), deleteKey);
+            else redistribute(mainDeleteNode.getParent(), deleteKey);
+        }
+    }
 
-        } else {
-            //왼쪽에 merge
-            Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
-            if (isZero) {
-                //최솟값이 아닌 deleteKey, internal Node에서 해당하는 deleteKey 순서의 값 변경
-                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
+    public void internalMerge(Node mainDeleteNode, int deleteKey){
+        //TODO: internalMerge 구현(부모가 root이거나 바뀌는거 등등.. 좀더 고민해봐야할듯)
+        int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(deleteKey);
+
+        //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우 //TODO: degree 제외 제한조건 지우기
+        if (degree <= 4) {
+            if (indexOfChildInParentNode == 0) {
+                //오른쪽에 merge: sibling이 사라짐
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++)
+                    mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
+                mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
+            } else {
+                //왼쪽에 merge: mainDeleteNode가 사라짐
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++)
+                    siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
+                mainDeleteNode.getParent().push_out(deleteKey);
             }
-            mainDeleteNode.push_out(deleteKey);
-            for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++)
-                siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
-            mainDeleteNode.getParent().push_out(mainDeleteNode.getKey(0));
         }
 
+        //degree >= 4인 경우
+        else {
+            if (indexOfChildInParentNode == 0) {
+                //오른쪽에 merge: sibling이 사라짐
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++)
+                    mainDeleteNode.push(siblingNode.getKey(i), siblingNode.getValue(i));
+                mainDeleteNode.getParent().push_out(siblingNode.getKey(0));
+
+            } else {
+                //왼쪽에 merge
+                Node siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
+                mainDeleteNode.push_out(deleteKey);
+                for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++)
+                    siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
+                mainDeleteNode.getParent().push_out(mainDeleteNode.getKey(0));
+            }
+        }
         if (mainDeleteNode.getParent().getCurrentNumberOfKeys() < minNumberOfKeys) {
-            redistribute(mainDeleteNode.getParent(), deleteKey);
+            if (degree < 5) redistribute_small(mainDeleteNode.getParent(), deleteKey);
+            else redistribute(mainDeleteNode.getParent(), deleteKey);
         }
     }
 
     private void redistribute_small(Node mainNode, int deleteKey){
         //TODO:redistribute_small 구현
+        //degree: 4이하
     }
 
-    private void redistribute(Node mainNode, int deleteKey){
+    private void redistribute(Node mainNode, int deleteKey) {
         //degree: 5이상
         //mainNode의 key는 1개 이상이며 minNumberOfKeys..보다 작음
 
         Node parentNode = mainNode.getParent();
 
-        while(!(mainNode == root)){
+        while (!(mainNode == root)) {
             //boolean isZero = parentNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
 
             int indexInParentNode = parentNode.findIndexOfChild(mainNode.getKey(0)); //부모 노드에서 현재 노드의 제일 작은 키 순서
 
             // => parentNode 밑은 정리 완료된 채로 왔음!
 
-            if(indexInParentNode > 0 && parentNode.getChildNode(indexInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys){
+            if (indexInParentNode > 0 && parentNode.getChildNode(indexInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys) {
                 System.out.println("왼쪽부모형제에서 빌려올 수 있는 경우(기본 경우)");
                 Node siblingNode = parentNode.getChildNode(indexInParentNode - 1);
                 /*if(isZero){
@@ -446,7 +499,7 @@ public class BPlusTree {
                  * 3. mainNode의 [0]번째 child를 [1]번째로 바꿔주고 [0]번째에는 sibling의 [currentNumberOfKeys]번째 child를 붙여주고 새로운 자식의 부모 수정
                  * 4. sibling에서 [currentNumberOfKeys - 1]번째 key와 [currentNumberOfKeys]번째 자식 삭제(그냥 push_out)
                  */
-                int indexInParentKeyArrays =  parentNode.findSmallIndexOfKeyInKeys(mainNode.getKey(0));
+                int indexInParentKeyArrays = parentNode.findSmallIndexOfKeyInKeys(mainNode.getKey(0));
                 indexInParentKeyArrays = indexInParentKeyArrays >= parentNode.getCurrentNumberOfKeys() ? indexInParentKeyArrays - 1 : indexInParentKeyArrays;
 
                 mainNode.push(parentNode.getKey(indexInParentKeyArrays), 0);
@@ -461,8 +514,7 @@ public class BPlusTree {
                 siblingNode.setCurrentNumberOfKeys(siblingNode.getCurrentNumberOfKeys() - 1);
 
                 break;
-            }
-            else if(indexInParentNode < parentNode.getCurrentNumberOfKeys() && parentNode.getChildNode(indexInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) {
+            } else if (indexInParentNode < parentNode.getCurrentNumberOfKeys() && parentNode.getChildNode(indexInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) {
                 System.out.println("오른쪽부모형제에서 빌려올 수 있는 경우");
                 Node siblingNode = parentNode.getChildNode(indexInParentNode + 1);
                 /**
@@ -473,34 +525,44 @@ public class BPlusTree {
                  * 5. sibling의 [1]번째 자식을 임시로 저장해두고 sibling의 [0]번째 key를 push_out
                  * 6. push_out하고 난 sibling의 [0]번째 자식을 임시저장해둔 자식으로 붙여넣기
                  */
-                int indexInParentKeyArrays =  parentNode.findSmallIndexOfKeyInKeys(mainNode.getKey(0));
+                int indexInParentKeyArrays = parentNode.findSmallIndexOfKeyInKeys(mainNode.getKey(0));
                 indexInParentKeyArrays = indexInParentKeyArrays >= parentNode.getCurrentNumberOfKeys() ? indexInParentKeyArrays - 1 : indexInParentKeyArrays;
 
                 mainNode.push(parentNode.getKey(indexInParentKeyArrays + 1), 0);
                 mainNode.setChildNode(siblingNode.getChildNode(0), mainNode.getCurrentNumberOfKeys());
                 siblingNode.getChildNode(0).setParent(mainNode);
 
-                parentNode.setKey(siblingNode.getKey(0),indexInParentKeyArrays + 1);
+                parentNode.setKey(siblingNode.getKey(0), indexInParentKeyArrays + 1);
 
                 for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++) {
                     siblingNode.setChildNode(siblingNode.getChildNode(i + 1), i);
-                } siblingNode.setChildNode(null, siblingNode.getCurrentNumberOfKeys());
+                }
+                siblingNode.setChildNode(null, siblingNode.getCurrentNumberOfKeys());
                 siblingNode.setCurrentNumberOfKeys(siblingNode.getCurrentNumberOfKeys() - 1);
 
 
                 break;
             }
             //빌릴수없는경우..
-            else mainNode = parentNode;
+            else{
+                internalMerge(parentNode, mainNode.getKey(0) ); //이거 좌우만 지정해주면 되는거아닌가?
+            };
         }
 
-        if(mainNode == root){
+        if (mainNode == root) {
+            //TODO: root일때 구현
             /**
              * (1) root에 key가 2개 이상인 경우
              *      root에서 key를 내려줌
              * (2) root에 key가 1개인 경우
              *      노드의 높이를 낮춤
              */
+            if(root.getCurrentNumberOfKeys() < 2){
+                //root에 key가 1개! height 감소
+            } else {
+                //root의 key를 하나 내림
+            }
+
         }
 
     }
