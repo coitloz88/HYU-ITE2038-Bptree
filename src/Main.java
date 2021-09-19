@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
@@ -17,7 +16,7 @@ public class Main {
          *  java bptree -r index.dat 100 200
          */
 
-
+/*
         if (args[0].equals("-c")) {
             //data file creation
             try {
@@ -106,34 +105,109 @@ public class Main {
 
 
         }
+*/
 
-/*
+/*        int degree = 5; //child(가지) 개수
+        BPlusTree bPlusTree = new BPlusTree(degree);
+        int totalNumber = 20;
+        for (int i = 0; i < totalNumber; i++) {
+            bPlusTree.insert(i, i * 100);
+        }
+
+        bPlusTree.saveTree("output.txt");
+*/
+
+        BPlusTree bPlusTree = readTree("output.txt");
+        bPlusTree.saveTree("output2.txt");
+
+    }
+
+    public static BPlusTree readTree(String indexFile){
+        BPlusTree bPlusTree = null;
         try {
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("input.csv"));
-            int totalNumber = 1000;
-            boolean[] exist = new boolean[totalNumber];
-            for (int i = 0; i < totalNumber; i++) {
-                exist[i] = false;
-            }
-            Random rd = new Random();
-            for (int i = 0; i < totalNumber; i++) {
-                int num = rd.nextInt(totalNumber);
-                while(exist[num]){
-                    num = rd.nextInt(totalNumber);
-                }
-                exist[num] = true;
-                String tmp = (num*2) + "," + (num*200) + "\n";
-                bufferedWriter.write(tmp);
+            BufferedReader br = new BufferedReader(new FileReader(indexFile));
+            int degree = Integer.parseInt(br.readLine());
 
+            String line = br.readLine(); // root 정보를 읽음
+
+            if(line == null){
+                br.close();
+                return bPlusTree;
             }
-            bufferedWriter.flush();
-            bufferedWriter.close();
+            else {
+                boolean isLeaf = line.charAt(6) == 1;
+                String[] datas = line.substring(9).split("/");
+                Node root = new Node(degree, isLeaf, null);
+                bPlusTree = new BPlusTree(degree, root);
+                if(isLeaf){
+                    for (int i = 0; i < datas.length; i++) {
+                        String[] keyValues = datas[i].split(" ");
+                        root.setKey(Integer.parseInt(keyValues[0]), i);
+                        root.setValue(Integer.parseInt(keyValues[1]), i);;
+                    }
+                } else {
+                    for (int i = 0; i < datas.length; i++) {
+                        readNode(br, root, i, degree - 1);
+                    }
+                }
+            }
+            br.close();
+            return bPlusTree;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        //BPlusTree bPlusTree = new BPlusTree(5);
-
-*/
+        return bPlusTree;
     }
+
+    private static void readNode(BufferedReader br, Node parentNode, int indexInParentNode, int totalNumberOfKeys) {
+        /**
+         * node의 child와 parent를 연결한다.
+         * 예를 들어 node가 leafnode의 parentNode라고 한다면
+         */
+        try {
+            String line = br.readLine();
+            System.out.println(line);
+            if(line == null || line.equals("#")) return;
+            String[] totalDatas = line.split(" / ");
+            String[] datas = totalDatas[0].split(" ");
+            boolean isLeaf = datas[3].equals("1");
+            /*
+            for (int i = 0; i < totalDatas.length - 1; i++) {
+                System.out.println(i + "번째 data: " + totalDatas[i]);
+            }*/
+            Node node = null;
+            if (isLeaf) {
+                int count = 0;
+                do {
+                    Node childNode = new Node(totalNumberOfKeys, true, parentNode);
+                    for (int i = 0; i < totalDatas.length - 1; i++) {
+                        String[] keyValues = totalDatas[i + 1].split(" ");
+                        childNode.setKey(Integer.parseInt(keyValues[0].replace(" ","")), i);
+                        childNode.setValue(Integer.parseInt(keyValues[1].replace(" ","")), i);
+                    }
+                    childNode.setCurrentNumberOfKeys(totalDatas.length - 1);
+                    parentNode.setChildNode(childNode, count++);
+                } while (!(line = br.readLine()).equals("#"));
+            } else {
+                node = new Node(totalNumberOfKeys, false, parentNode);
+                for (int i = 0; i < totalDatas.length - 1; i++) {
+                    node.setKey(Integer.parseInt(totalDatas[i + 1].replace(" ","")), i);
+                }
+                node.setCurrentNumberOfKeys(totalDatas.length - 1);
+                parentNode.setChildNode(node, indexInParentNode);
+                for (int i = 0; i < totalDatas.length; i++) {
+                    readNode(br, node, i, totalNumberOfKeys);
+                }
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

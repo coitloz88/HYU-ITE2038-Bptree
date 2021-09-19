@@ -1,11 +1,6 @@
-import java.io.Serializable;
+import java.io.*;
 
 public class BPlusTree implements Serializable {
-    /**
-     * degree: max degree(m-way)
-     * <p>
-     * insert: 넣는거 시도하는데 성공적으로 넣어지면 1, 안되면 0을 반환하는 기본 함수로 일단 넣음 나머지 쪼개는거는 비쁠트리 차원에서
-     */
 
     private final int degree;
     private final int totalNumberOfKeys;
@@ -13,12 +8,14 @@ public class BPlusTree implements Serializable {
     private final int divide_i;
     private final int minNumberOfKeys;
 
-    public BPlusTree(int degree) {
+    private static int nodeCount;
+
+    public BPlusTree(int degree, Node root) {
         this.degree = degree;
         this.totalNumberOfKeys = degree - 1;
         this.divide_i = degree % 2 == 0 ? degree / 2 : (int) Math.ceil((double) degree / 2) - 1;
         this.minNumberOfKeys = (int) Math.ceil((double) degree / 2) - 1;
-        root = new Node(totalNumberOfKeys, true, null);
+        this.root = root;
     }
 
     private Node singleKeySearchNode(int target, boolean showNodeKey) {
@@ -57,7 +54,7 @@ public class BPlusTree implements Serializable {
          * 동일한 값이 있을 때 return
          * 사이값일 경우 그 사이 노드로 들어감
          *
-         * 찾으면 해당하는 value 반환
+         * 찾으면 해당하는 value 출력
          */
         if (root.getCurrentNumberOfKeys() == 0) {
             System.out.println("root is empty");
@@ -235,13 +232,7 @@ public class BPlusTree implements Serializable {
     }
 
     public void delete(int inputDeleteKey) {
-        /**
-         * 1. B+ Tree index에서 key 값을 검색하여 데이터의 위치를 찾아 데이터베이스에서 데이터를 삭제한다.
-         * 2. B+ Tree index에서 삭제한 데이터의 (pointer, key) 쌍을 삭제한다.
-         * 3-1. 삭제 후 entry가 얼마 남지 않았고, 형제 노드와 merge가 가능한 경우 merge하여 하나의 노드로 만든다.
-         * 3-2. 삭제 후 entry가 얼마 남지 않았지만, 형제 노드와 merge가 불가능한 경우 redistribute한다.
-         * 4. parent 노드에서도 (pointer, key) 쌍을 삭제한 뒤 3-1과 3-2를 반복한다.
-         */
+
         Node searchLeafNode = singleKeySearchNode(inputDeleteKey, false);
         int target_i = searchLeafNode.findIndexOfKeyInKeyArray(inputDeleteKey);
         target_i = target_i >= searchLeafNode.getCurrentNumberOfKeys() ? target_i - 1 : target_i;
@@ -326,10 +317,7 @@ public class BPlusTree implements Serializable {
 
     //borrow가 안되는 경우 실행됨
     private void merge(Node mainDeleteNode, int deleteKey) {
-        /**
-         * 아.. 잠시만 와다다 정리해봄
-         * 남은 key가 0인 경우(즉 mainDeleteNode의 currentNumberOfKeys가 1인 경우)는 바로 redistribute로 넘겨줌! 아래 과정 처리안됨
-         *
+        /**         *
          *  1. merge가 가능한 경우: 부모 노드가 divide_i 초과
          *   merge가 가능한데 [0]을 삭제하는 경우, internalNode에 해당하는 값을 [0]을 지운 노드의 [1]번째로 set해준다 (push_out으로 꺼낸 다음인 경우 [0])
          *   - 기본적으로 왼쪽 노드에 merge함
@@ -559,6 +547,70 @@ public class BPlusTree implements Serializable {
 
 
     }
+
+    public void saveTree(String indexFile){
+        try {
+            FileWriter fw = new FileWriter(indexFile);
+            nodeCount = 0;
+            fw.write(degree + "\n");
+
+            saveNode(fw, root, 0);
+
+            fw.flush();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveNode(FileWriter fw, Node node, int parentNodeNumber){ //트리 순회
+        /**
+         * <저장방식>
+         * leaf인 경우 1, 아닌 경우 0으로 저장
+         * 
+         * root(leaf가 아닌 경우)
+         * @ 1 0 0 / key[0] / key[1] / key[2] / ...
+         *
+         * internalNode
+         * @ nodeNumber parentNodeNumber isLeaf / key[i] / key[i+1] / ... /
+         *
+         * leafNode
+         * @ nodeNumber parentNodeNumber isLeaf / key[i] value[i] / key[i+1] value[i+1] / ... /         
+         * </저장방식>
+         */
+
+        int nodeNumber = ++nodeCount; //저장할 노드의 고유번호
+
+        try {
+            fw.write("@ " + nodeNumber + " " + parentNodeNumber);
+            if(node.isLeaf()){
+                //leaf node 저장
+                fw.write(" " + 1 + " / ");
+                for (int i = 0; i < node.getCurrentNumberOfKeys(); i++) {
+                    fw.write(node.getKey(i) + " " + node.getValue(i) + " / ");
+                }
+                fw.write("\n");
+            } else {
+                //leaf가 아닌 노드 저장
+                fw.write(" " + 0 + " / ");
+                for (int i = 0; i < node.getCurrentNumberOfKeys(); i++) {
+                    fw.write(node.getKey(i) + " / ");
+                }
+                fw.write("\n");
+                for (int i = 0; i <= node.getCurrentNumberOfKeys(); i++) {
+                    saveNode(fw, node.getChildNode(i), nodeNumber);
+                }
+                fw.write("#\n");
+
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
 }
 
