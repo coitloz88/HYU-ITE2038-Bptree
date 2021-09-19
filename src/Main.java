@@ -16,8 +16,7 @@ public class Main {
          * 5. program -r index_file start_key end_key
          *  java bptree -r index.dat 100 200
          */
-
-        //TODO: command line argument 구현
+/*
         if (args[2].equals("-c")) {
             //data file creation
             try {
@@ -30,7 +29,6 @@ public class Main {
             }
         } else if (args[2].equals("-i")) {
             //insert
-            //TODO: index . dat에 있던 tree를 복사, input.csv를 파싱해서 insert
             try {
                 ObjectInputStream inputIndexDAT = new ObjectInputStream(new FileInputStream(args[3]));
                 BPlusTree bPlusTree = (BPlusTree) inputIndexDAT.readObject();
@@ -107,12 +105,12 @@ public class Main {
 
 
         }
-
+*/
+        System.out.println("Hello JAVA!");
 
 /*
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("input.csv"));
-            final String NEWLINE = System.lineSeparator();
             int totalNumber = 1000;
             boolean[] exist = new boolean[totalNumber];
             for (int i = 0; i < totalNumber; i++) {

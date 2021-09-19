@@ -47,18 +47,18 @@ public class Node implements Serializable {
     }
 
     public int getKey(int i) {
-        if (i >= currentNumberOfKeys) {
+        /*if (i >= currentNumberOfKeys) {
             System.out.println(" ** 초과한 key를 요청한 node **");
             showKeys();
             System.out.println(" ** 초과 보여주기 끝! **");
             System.err.println("getKey(): Ouf of bound");
-        }
+        }*/
 
         return keys[i];
     }
 
     public void setKey(int key, int i) {
-        if (i >= keys.length) System.err.println("setKey(): Ouf of bound");
+        //if (i >= keys.length) System.err.println("setKey(): Ouf of bound");
         keys[i] = key;
     }
 
