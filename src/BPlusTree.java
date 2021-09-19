@@ -327,7 +327,6 @@ public class BPlusTree implements Serializable {
 
     //borrow가 안되는 경우 실행됨
     private void merge(Node mainDeleteNode, int deleteKey) {
-        //TODO:merge 구현
         /**
          * 아.. 잠시만 와다다 정리해봄
          * 남은 key가 0인 경우(즉 mainDeleteNode의 currentNumberOfKeys가 1인 경우)는 바로 redistribute로 넘겨줌! 아래 과정 처리안됨
@@ -357,7 +356,7 @@ public class BPlusTree implements Serializable {
         int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(deleteKey);
         Node siblingNode;
 
-        //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우 //TODO: degree 제외 제한조건 지우기
+        //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우
         if (degree <= 4) {
             if (indexOfChildInParentNode == 0) {
                 //오른쪽에 merge: sibling이 사라짐
@@ -422,7 +421,6 @@ public class BPlusTree implements Serializable {
     }
 
     public void internalMerge(Node mainDeleteNode, int leastkey) {
-        //TODO: internalMerge 구현(부모가 root이거나 바뀌는거 등등.. 좀더 고민해봐야할듯)
 
         /**
          * 받은 mainNode가 root인지 확인, root라면 개수확인해서 root에 키가 2개이상이면 내리면서 병합하고 아니라면 height 하나 낮아짐 -> 루프 탈출
@@ -447,49 +445,40 @@ public class BPlusTree implements Serializable {
         int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(leastkey);
 
         Node siblingNode;
-        //예외 처리: degree가 3이라서 key 빼면 node가 실종되는 경우 //TODO: degree 제외 제한조건 지우기
-        if (degree <= 4) {
-            if(indexOfChildInParentNode == 0){
-                siblingNode = mainDeleteNode.getParent().getChildNode(1);
-                mainDeleteNode.push(mainDeleteNode.getParent().getKey(0) , 0);
-                mainDeleteNode.getParent().push_out(mainDeleteNode.getParent().getKey(0));
-                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++) {
-                    mainDeleteNode.setKey(siblingNode.getKey(i), mainDeleteNode.getCurrentNumberOfKeys());
-                }
-            }
-        }
 
         //degree >= 4인 경우
-        else {
-            if (indexOfChildInParentNode == 0) {
-                //오른쪽에 merge: sibling이 사라짐
-                siblingNode = mainDeleteNode.getParent().getChildNode(1);
-                mainDeleteNode.push(mainDeleteNode.getParent().getKey(0), 0);
-                mainDeleteNode.getParent().push_out(mainDeleteNode.getParent().getKey(0));
-                for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++) {
-                    mainDeleteNode.setKey(siblingNode.getKey(i), mainDeleteNode.getCurrentNumberOfKeys());
-                    mainDeleteNode.setChildNode(siblingNode.getChildNode(i), mainDeleteNode.getCurrentNumberOfKeys());
-                    mainDeleteNode.getChildNode(mainDeleteNode.getCurrentNumberOfKeys()).setParent(mainDeleteNode);
-                    mainDeleteNode.setCurrentNumberOfKeys(mainDeleteNode.getCurrentNumberOfKeys() + 1);
-                } mainDeleteNode.setChildNode(siblingNode.getChildNode(siblingNode.getCurrentNumberOfKeys()), mainDeleteNode.getCurrentNumberOfKeys());
+
+        if (indexOfChildInParentNode == 0) {
+            //오른쪽에 merge: sibling이 사라짐
+            siblingNode = mainDeleteNode.getParent().getChildNode(1);
+            mainDeleteNode.push(mainDeleteNode.getParent().getKey(0), 0);
+            mainDeleteNode.getParent().push_out(mainDeleteNode.getParent().getKey(0));
+            for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++) {
+                mainDeleteNode.setKey(siblingNode.getKey(i), mainDeleteNode.getCurrentNumberOfKeys());
+                mainDeleteNode.setChildNode(siblingNode.getChildNode(i), mainDeleteNode.getCurrentNumberOfKeys());
                 mainDeleteNode.getChildNode(mainDeleteNode.getCurrentNumberOfKeys()).setParent(mainDeleteNode);
-            } else {
-                //왼쪽에 merge
-                siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
-                siblingNode.push(siblingNode.getParent().getKey(indexOfChildInParentNode - 1), 0);
-                mainDeleteNode.getParent().push_out(mainDeleteNode.getParent().getKey(indexOfChildInParentNode - 1));
-                for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++) {
-                    siblingNode.setKey(mainDeleteNode.getKey(i), siblingNode.getCurrentNumberOfKeys());
-                    siblingNode.setChildNode(mainDeleteNode.getChildNode(i), siblingNode.getCurrentNumberOfKeys());
-                    siblingNode.getChildNode(siblingNode.getCurrentNumberOfKeys()).setParent(siblingNode);
-                    siblingNode.setCurrentNumberOfKeys(siblingNode.getCurrentNumberOfKeys() + 1);
-                } siblingNode.setChildNode(mainDeleteNode.getChildNode(mainDeleteNode.getCurrentNumberOfKeys()), siblingNode.getCurrentNumberOfKeys());
-                siblingNode.getChildNode(siblingNode.getCurrentNumberOfKeys()).setParent(siblingNode);
+                mainDeleteNode.setCurrentNumberOfKeys(mainDeleteNode.getCurrentNumberOfKeys() + 1);
             }
+            mainDeleteNode.setChildNode(siblingNode.getChildNode(siblingNode.getCurrentNumberOfKeys()), mainDeleteNode.getCurrentNumberOfKeys());
+            mainDeleteNode.getChildNode(mainDeleteNode.getCurrentNumberOfKeys()).setParent(mainDeleteNode);
+        } else {
+            //왼쪽에 merge
+            siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
+            siblingNode.push(siblingNode.getParent().getKey(indexOfChildInParentNode - 1), 0);
+            mainDeleteNode.getParent().push_out(mainDeleteNode.getParent().getKey(indexOfChildInParentNode - 1));
+            for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++) {
+                siblingNode.setKey(mainDeleteNode.getKey(i), siblingNode.getCurrentNumberOfKeys());
+                siblingNode.setChildNode(mainDeleteNode.getChildNode(i), siblingNode.getCurrentNumberOfKeys());
+                siblingNode.getChildNode(siblingNode.getCurrentNumberOfKeys()).setParent(siblingNode);
+                siblingNode.setCurrentNumberOfKeys(siblingNode.getCurrentNumberOfKeys() + 1);
+            }
+            siblingNode.setChildNode(mainDeleteNode.getChildNode(mainDeleteNode.getCurrentNumberOfKeys()), siblingNode.getCurrentNumberOfKeys());
+            siblingNode.getChildNode(siblingNode.getCurrentNumberOfKeys()).setParent(siblingNode);
+
         }
 
-        if(mainDeleteNode.getParent() == root){
-            if(root.getCurrentNumberOfKeys() < 1) root = indexOfChildInParentNode == 0 ? mainDeleteNode : siblingNode;
+        if (mainDeleteNode.getParent() == root) {
+            if (root.getCurrentNumberOfKeys() < 1) root = indexOfChildInParentNode == 0 ? mainDeleteNode : siblingNode;
             return;
         }
 
