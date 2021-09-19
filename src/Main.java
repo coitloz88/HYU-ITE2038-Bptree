@@ -59,13 +59,21 @@ public class Main {
             //deletion
 
             try {
-                ObjectInputStream indexDAT = new ObjectInputStream(new FileInputStream(args[3]));
-                BPlusTree bPlusTree = (BPlusTree) indexDAT.readObject();
+                ObjectInputStream inputIndexDAT = new ObjectInputStream(new FileInputStream(args[3]));
+                BPlusTree bPlusTree = (BPlusTree) inputIndexDAT.readObject();
+                BufferedReader bufferInputCSV = new BufferedReader(new FileReader(args[4]));
 
-                FileReader fileReader_inputCSV = new FileReader(args[4]);
-                //TODO: index.dat에 있던 tree를 복사, input.csv를 파싱해서 insert
+                String line = null;
+
+                while ((line = bufferInputCSV.readLine()) != null) {
+                    bPlusTree.delete(Integer.parseInt(line));
+                }
+
+                ObjectOutputStream indexDAT = new ObjectOutputStream(new FileOutputStream(args[3]));
+                indexDAT.writeObject(bPlusTree);
                 indexDAT.close();
-                fileReader_inputCSV.close();
+                inputIndexDAT.close();
+                bufferInputCSV.close();
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
@@ -101,11 +109,11 @@ public class Main {
         }
 
 
-/*
+
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("input.csv"));
             final String NEWLINE = System.lineSeparator();
-            int totalNumber = 1000;
+            int totalNumber = 1000000;
             boolean[] exist = new boolean[totalNumber];
             for (int i = 0; i < totalNumber; i++) {
                 exist[i] = false;
@@ -128,7 +136,7 @@ public class Main {
         }
 
         //BPlusTree bPlusTree = new BPlusTree(5);
-*/
+
 
     }
 }
