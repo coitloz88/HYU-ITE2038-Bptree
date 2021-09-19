@@ -109,11 +109,11 @@ public class Main {
         }
 
 
-
+/*
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("input.csv"));
             final String NEWLINE = System.lineSeparator();
-            int totalNumber = 1000000;
+            int totalNumber = 1000;
             boolean[] exist = new boolean[totalNumber];
             for (int i = 0; i < totalNumber; i++) {
                 exist[i] = false;
@@ -137,6 +137,6 @@ public class Main {
 
         //BPlusTree bPlusTree = new BPlusTree(5);
 
-
+*/
     }
 }
