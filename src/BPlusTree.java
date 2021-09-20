@@ -1,14 +1,12 @@
 import java.io.*;
 
-public class BPlusTree implements Serializable {
+public class BPlusTree{
 
     private final int degree;
     private final int totalNumberOfKeys;
     private Node root;
     private final int divide_i;
     private final int minNumberOfKeys;
-
-    private static int nodeCount;
 
     public BPlusTree(int degree, Node root) {
         this.degree = degree;
@@ -33,11 +31,9 @@ public class BPlusTree implements Serializable {
         return tmpNode;
     }
 
-    private Node singleKeySearchInternalNode(int target, boolean showNodeKey) {
+    private Node singleKeySearchInternalNode(int target) {
         Node tmpNode = root;
         while (!tmpNode.isLeaf()) {
-            if (showNodeKey) tmpNode.showKeys();
-
             // 현재 노드가 가진 key 값에 target 값이 있는지 찾아본다
             int i = tmpNode.findIndexOfKeyInKeyArray(target);
             if (i < tmpNode.getCurrentNumberOfKeys() && target == tmpNode.getKey(i))
@@ -49,13 +45,7 @@ public class BPlusTree implements Serializable {
     }
 
     public void singleKeySearch(int target) {
-        /**
-         * root부터 탐색 시작
-         * 동일한 값이 있을 때 return
-         * 사이값일 경우 그 사이 노드로 들어감
-         *
-         * 찾으면 해당하는 value 출력
-         */
+
         if (root.getCurrentNumberOfKeys() == 0) {
             System.out.println("root is empty");
             return;
@@ -69,7 +59,6 @@ public class BPlusTree implements Serializable {
             System.out.println(tmpNode.getValue(i));
         } else {
             System.out.println("NOT FOUND");
-            return;
         }
     }
 
@@ -112,14 +101,6 @@ public class BPlusTree implements Serializable {
             targetNode.push(inputKey, inputValue);
         } else {
             //split
-            /**
-             * 1. (totalNumberOfKeys + 1)의 Node를 하나 생성, targetNode의 '값'만 복사해줌 (주소 X) ->virtualNode
-             *      leftNode랑 .. 기타등등
-             * 2. inputKey, inputValue 쌍을 넣어줌 push_back해줌
-             * 3. rightChildNode(new로 동적할당) -> longTmpNode의 [divide_i] 이후의 값을 대입
-             * 4. targetNode의 rightNode가 rightChildNode를 가리키게 함 #targetNode가 root인지 확인!!(5와 예외처리)
-             * 5. virutalNode의 keys[divide_i]를 parent node에 internalNodeInsert()함
-             */
 
             Node virtualNode = new Node(totalNumberOfKeys + 1, true, null);
 
@@ -257,17 +238,22 @@ public class BPlusTree implements Serializable {
         if (searchLeafNode.getCurrentNumberOfKeys() > minNumberOfKeys) {
             //key가 많은 경우
             if (inputDeleteKey == searchLeafNode.getKey(0)) {
+
                 searchLeafNode.push_out(inputDeleteKey);
-                Node internalNode = singleKeySearchInternalNode(inputDeleteKey, false);
+                Node internalNode = singleKeySearchInternalNode(inputDeleteKey);
                 if (!internalNode.isLeaf()) { //최솟값지우는경우 예외처리, leaf의 [0]은 지우고, internalNode자리에는 leaf의 [1]번째 key를 넣어주면됨!([0]부터 지웠다면 [0]
                     int indexInInternalNode = internalNode.findIndexOfKeyInKeyArray(inputDeleteKey);
                     indexInInternalNode = indexInInternalNode >= internalNode.getCurrentNumberOfKeys() ? indexInInternalNode - 1 : indexInInternalNode;
                     internalNode.setKey(searchLeafNode.getKey(0), indexInInternalNode);
                 }
-            } else searchLeafNode.push_out(inputDeleteKey);
+            } else{
+
+                searchLeafNode.push_out(inputDeleteKey);
+            }
         } else {
             //key가 적은 경우
             //sibling node에서 빌려올 수 있는지 확인
+
             if (!borrowFromSiblingNode(searchLeafNode, inputDeleteKey)) { //빌릴수 있으면 조건문 함수내에서 빌린거 정리싹다함
                 //빌릴 수 없으면 merge
                 merge(searchLeafNode, inputDeleteKey);
@@ -283,10 +269,9 @@ public class BPlusTree implements Serializable {
         int indexOfChildInParentNode = mainNode.getParent().findIndexOfChild(deleteKey);
 
         if (indexOfChildInParentNode > 0 && mainNode.getParent().getChildNode(indexOfChildInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys) { //left sibling이 key를 빌려줄 수 있음
-
             Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode - 1);
             if (isZero) {
-                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                Node internalNode = singleKeySearchInternalNode(deleteKey);
                 internalNode.setKey(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
             }
 
@@ -300,45 +285,25 @@ public class BPlusTree implements Serializable {
             Node siblingNode = mainNode.getParent().getChildNode(indexOfChildInParentNode + 1);
 
             if (isZero) {
-                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                if (degree == 3)
+                Node internalNode = singleKeySearchInternalNode(deleteKey);
+                if (degree < 4)
                     internalNode.setKey(siblingNode.getKey(0), internalNode.findIndexOfKeyInKeyArray(deleteKey));
                 else internalNode.setKey(mainNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
             }
 
             mainNode.push_out(deleteKey);
             mainNode.push(siblingNode.getKey(0), siblingNode.getValue(0));
-            siblingNode.push_out(siblingNode.getKey(0));
+            siblingNode.push_out(siblingNode.getKey(0)); // leaf라서 ㄱㅊ
 
             mainNode.getParent().setKey(siblingNode.getKey(0), indexOfChildInParentNode);
         } else return false;
+
         return true;
     }
 
     //borrow가 안되는 경우 실행됨
     private void merge(Node mainDeleteNode, int deleteKey) {
-        /**         *
-         *  1. merge가 가능한 경우: 부모 노드가 divide_i 초과
-         *   merge가 가능한데 [0]을 삭제하는 경우, internalNode에 해당하는 값을 [0]을 지운 노드의 [1]번째로 set해준다 (push_out으로 꺼낸 다음인 경우 [0])
-         *   - 기본적으로 왼쪽 노드에 merge함
-         *      siblingNode = getParent.childNode[indexInParentNode - 1]
-         *      (1) isZero인 경우, mainDeleteNode의 [1]번째 값을 internal Node에 알맞은 위치에(본래 deleteKey가 위치해야했던 곳) set해줌 -> 이 internal이 root여도 상관없는게 지우는게 아니라 값을 바꿔치기 하는거임
-         *      (2) mainDeleteNode에서 deleteKey를 push_out해줌
-         *      (3) 왼쪽 siblingNode에 있던 애들을 전부 push_out하고 mainDeleteNode로 push
-         *      (4) parentNode의 keys에서 mainDeleteNode의 keys[currentNumberOfKeys - 1]값을 push_out
-         *
-         *   - 오른쪽으로 merge하는 경우(왼쪽에 형제 노드가 더 없는 경우!! 예외 처리처럼 해줌)
-         *      siblingNode = getParent.childNode[indexInParentNode + 1]
-         *      (1) isZero인 경우 mainDeleteNode의 [1]번째 값을 internal Node에 알맞은 위치에(본래 deleteKey가 위치해야했던 곳) set해줌
-         *      (1) mainDeleteNode에서 deleteKey를 push_out해줌
-         *      (2) 빼고나서 mainDeleteNode에 key가 없으면(0개면) getParent.childNode[indexInParentNode + 1]에 mainDeleteKey에 남은 값 push하는거 관둠(해야되면 반복문으로 끝까지 push)
-         *      (3) parentNode의 keys에서 siblingNode의 [0]번째 key값을 push_out해줌
-         *
-         *  2. merge 안되면 부모 노드가 부모의 sibling에서 빌려올수있는지 확인
-         */
-
         //merge될때, 왼쪽 기준이 살아남음
-
         boolean isZero = mainDeleteNode.findIndexOfKeyInKeyArray(deleteKey) == 0;
         int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(deleteKey);
         Node siblingNode;
@@ -348,7 +313,7 @@ public class BPlusTree implements Serializable {
             if (indexOfChildInParentNode == 0) {
                 //오른쪽에 merge: sibling이 사라짐
                 siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
-                Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                Node internalNode = singleKeySearchInternalNode(deleteKey);
                 if (!internalNode.isLeaf()) {
                     internalNode.setKey(siblingNode.getKey(0), internalNode.findIndexOfKeyInKeyArray(deleteKey));
                 }
@@ -373,7 +338,7 @@ public class BPlusTree implements Serializable {
                 siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode + 1);
                 if (isZero) {
                     //internal Node에 해당하는 deleteKey순서의 값 변경
-                    Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                    Node internalNode = singleKeySearchInternalNode(deleteKey);
                     //예외처리: 최솟값을 지우는 경우 - 필요없나?
                     if (!internalNode.isLeaf()) {
                         internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
@@ -388,13 +353,14 @@ public class BPlusTree implements Serializable {
                 siblingNode = mainDeleteNode.getParent().getChildNode(indexOfChildInParentNode - 1);
                 if (isZero) {
                     //최솟값이 아닌 deleteKey, internal Node에서 해당하는 deleteKey 순서의 값 변경
-                    Node internalNode = singleKeySearchInternalNode(deleteKey, false);
+                    Node internalNode = singleKeySearchInternalNode(deleteKey);
                     internalNode.setKey(mainDeleteNode.getKey(1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
                 }
                 mainDeleteNode.push_out(deleteKey);
                 for (int i = 0; i < mainDeleteNode.getCurrentNumberOfKeys(); i++)
                     siblingNode.push(mainDeleteNode.getKey(i), mainDeleteNode.getValue(i));
                 mainDeleteNode.getParent().push_out(mainDeleteNode.getKey(0));
+
             }
         }
         if(mainDeleteNode.getParent() == root){
@@ -408,33 +374,11 @@ public class BPlusTree implements Serializable {
     }
 
     public void internalMerge(Node mainDeleteNode, int leastkey) {
-
-        /**
-         * 받은 mainNode가 root인지 확인, root라면 개수확인해서 root에 키가 2개이상이면 내리면서 병합하고 아니라면 height 하나 낮아짐 -> 루프 탈출
-         *
-         * 메인노드 첫번째키(젤작은키)를 써서 parent에서 몇번째(n) 자식노드인지 확인.
-         *
-         * -0번째면 오른쪽 형제노드와 병합
-         * -그외에는 왼쪽 형제노드와 병합
-         * # 두 경우 모두 병합하면서 부모노드에서 n?번째 키를 땡겨내려와서 병합한거에 넣어줌...?
-         * (한쪽은 최소개수, 한쪽은 최소개수보다 적으니까 괜찮은듯)
-         * # 병합하고나면 병합된 노드의 자식노드들 parent 수정도 꼭!해줄것
-         *
-         * 병합했는데 부모의 key개수가 최소 이상->루프 끝
-         * 아니면->redistri...어쩌구(형제노드에서 땡겨올수있는지 확인)
-         *
-         *
-         *
-         * ## redistribution 함수 while 쓰지말것
-         * 그냥 재귀함수 돌리고돌리면될듯
-         */
-
         int indexOfChildInParentNode = mainDeleteNode.getParent().findIndexOfChild(leastkey);
 
         Node siblingNode;
 
         //degree >= 4인 경우
-
         if (indexOfChildInParentNode == 0) {
             //오른쪽에 merge: sibling이 사라짐
             siblingNode = mainDeleteNode.getParent().getChildNode(1);
@@ -477,26 +421,13 @@ public class BPlusTree implements Serializable {
 
     private void redistribute(Node mainNode, int deleteKey) {
         deleteKey = mainNode.getCurrentNumberOfKeys() == 0 ? deleteKey : mainNode.getKey(0);
-
         Node parentNode = mainNode.getParent();
         int indexInParentNode = parentNode.findIndexOfChild(deleteKey);
 
         // => parentNode 밑은 정리 완료된 채로 왔음!
 
         if (indexInParentNode > 0 && parentNode.getChildNode(indexInParentNode - 1).getCurrentNumberOfKeys() > minNumberOfKeys) {
-
             Node siblingNode = parentNode.getChildNode(indexInParentNode - 1);
-                /*if(isZero){
-                    Node internalNode = singleKeySearchInternalNode(deleteKey, false);
-                    internalNode.setKey(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), internalNode.findIndexOfKeyInKeyArray(deleteKey));
-                }*/
-
-            /**
-             * 1. parentNode.findIndexOfKeyArrays(deleteKey)번째 값을 가져온다.
-             * 2. 1을 mainNode에 push
-             * 3. mainNode의 [0]번째 child를 [1]번째로 바꿔주고 [0]번째에는 sibling의 [currentNumberOfKeys]번째 child를 붙여주고 새로운 자식의 부모 수정
-             * 4. sibling에서 [currentNumberOfKeys - 1]번째 key와 [currentNumberOfKeys]번째 자식 삭제(그냥 push_out)
-             */
             int indexInParentKeyArrays = parentNode.findSmallIndexOfKeyInKeys(deleteKey);
             indexInParentKeyArrays = indexInParentKeyArrays >= parentNode.getCurrentNumberOfKeys() ? indexInParentKeyArrays - 1 : indexInParentKeyArrays;
 
@@ -509,34 +440,28 @@ public class BPlusTree implements Serializable {
             parentNode.setKey(siblingNode.getKey(siblingNode.getCurrentNumberOfKeys() - 1), indexInParentKeyArrays);
 
             siblingNode.setChildNode(null, siblingNode.getCurrentNumberOfKeys());
+            siblingNode.setKey(0, siblingNode.getCurrentNumberOfKeys() - 1);
             siblingNode.setCurrentNumberOfKeys(siblingNode.getCurrentNumberOfKeys() - 1);
 
         } else if (indexInParentNode < parentNode.getCurrentNumberOfKeys() && parentNode.getChildNode(indexInParentNode + 1).getCurrentNumberOfKeys() > minNumberOfKeys) {
 
             Node siblingNode = parentNode.getChildNode(indexInParentNode + 1);
-            /**
-             * 1. parentNode.findIndexOfKeyArrays(deleteKey)번째 값을 가져온다.
-             * 2. 1을 mainNode에 push
-             * 3. mainNode의 [currentNumberOfKeys]번째 child에 sibling의 [0]번째 child를 붙여주고 새로운 자식의 부모 수정
-             * 4. parent의 findIndexOfKeyArrays(deleteKey)번째 key를 sibling의 [0]번째 key로 변경
-             * 5. sibling의 [1]번째 자식을 임시로 저장해두고 sibling의 [0]번째 key를 push_out
-             * 6. push_out하고 난 sibling의 [0]번째 자식을 임시저장해둔 자식으로 붙여넣기
-             */
-            int indexInParentKeyArrays = parentNode.findSmallIndexOfKeyInKeys(deleteKey);
+
+            int indexInParentKeyArrays = parentNode.findIndexOfKeyInKeyArray(deleteKey);
             indexInParentKeyArrays = indexInParentKeyArrays >= parentNode.getCurrentNumberOfKeys() ? indexInParentKeyArrays - 1 : indexInParentKeyArrays;
 
-            mainNode.push(parentNode.getKey(indexInParentKeyArrays + 1), 0);
+
+            mainNode.push(parentNode.getKey(indexInParentKeyArrays), 0);
+            parentNode.setKey(siblingNode.getKey(0), indexInParentKeyArrays);
             mainNode.setChildNode(siblingNode.getChildNode(0), mainNode.getCurrentNumberOfKeys());
             siblingNode.getChildNode(0).setParent(mainNode);
 
-            parentNode.setKey(siblingNode.getKey(0), indexInParentKeyArrays + 1);
-
-            for (int i = 0; i < siblingNode.getCurrentNumberOfKeys(); i++) {
+            for (int i = 0; i < siblingNode.getCurrentNumberOfKeys() - 1; i++) {
+                siblingNode.setKey(siblingNode.getKey(i + 1), i);
                 siblingNode.setChildNode(siblingNode.getChildNode(i + 1), i);
-            }
+            } siblingNode.setChildNode(siblingNode.getChildNode(siblingNode.getCurrentNumberOfKeys()), siblingNode.getCurrentNumberOfKeys() - 1);
             siblingNode.setChildNode(null, siblingNode.getCurrentNumberOfKeys());
             siblingNode.setCurrentNumberOfKeys(siblingNode.getCurrentNumberOfKeys() - 1);
-
 
         }
         //빌릴수없는경우..
@@ -551,10 +476,9 @@ public class BPlusTree implements Serializable {
     public void saveTree(String indexFile){
         try {
             FileWriter fw = new FileWriter(indexFile);
-            nodeCount = 0;
             fw.write(degree + "\n");
 
-            saveNode(fw, root, 0);
+            saveNode(fw, root);
 
             fw.flush();
             fw.close();
@@ -563,25 +487,9 @@ public class BPlusTree implements Serializable {
         }
     }
 
-    private void saveNode(FileWriter fw, Node node, int parentNodeNumber){ //트리 순회
-        /**
-         * <저장방식>
-         * leaf인 경우 1, 아닌 경우 0으로 저장
-         * 
-         * root(leaf가 아닌 경우)
-         * @ 1 0 0 / key[0] / key[1] / key[2] / ...
-         *
-         * internalNode
-         * @ nodeNumber parentNodeNumber isLeaf / key[i] / key[i+1] / ... /
-         *
-         * leafNode
-         * @ nodeNumber parentNodeNumber isLeaf / key[i] value[i] / key[i+1] value[i+1] / ... /         
-         * </저장방식>
-         */
-
-        int nodeNumber = ++nodeCount; //저장할 노드의 고유번호
-
+    private void saveNode(FileWriter fw, Node node){ //트리 순회
         try {
+
             if(node.isLeaf()){
                 //leaf node 저장
                 fw.write(1 + " / ");
@@ -597,7 +505,7 @@ public class BPlusTree implements Serializable {
                 }
                 fw.write("\n");
                 for (int i = 0; i <= node.getCurrentNumberOfKeys(); i++) {
-                    saveNode(fw, node.getChildNode(i), nodeNumber);
+                    saveNode(fw, node.getChildNode(i));
                 }
                 //fw.write("#\n");
 

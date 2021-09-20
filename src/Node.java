@@ -1,14 +1,4 @@
-import java.io.Serializable;
-
-public class Node implements Serializable {
-    /**
-     * 0. leaf인지 아닌지
-     * 1. m: # of keys
-     * 2. p: an array of <key, left_child_node> pairs
-     * 3. r: a pointer to the rightmost child node / a pointer to the right sibling node
-     * <p>
-     * boolean push_back(int index): index값을 하나 받으면 key배열에 더 넣을 수 있는지 확인해보고 되면 넣고 안되면 0을 반환하는 함수
-     */
+public class Node {
 
     private boolean leaf; //root혹은 internal일때는 false,leaf일때는 true
     private int currentNumberOfKeys; //배열 마지막 번호보다 1 크다.
@@ -43,18 +33,10 @@ public class Node implements Serializable {
     }
 
     public int getKey(int i) {
-        /*if (i >= currentNumberOfKeys) {
-            System.out.println(" ** 초과한 key를 요청한 node **");
-            showKeys();
-            System.out.println(" ** 초과 보여주기 끝! **");
-            System.err.println("getKey(): Ouf of bound");
-        }*/
-
         return keys[i];
     }
 
     public void setKey(int key, int i) {
-        //if (i >= keys.length) System.err.println("setKey(): Ouf of bound");
         keys[i] = key;
     }
 
@@ -84,7 +66,6 @@ public class Node implements Serializable {
 
     //input이 삽입되면 되는 [index], 혹은 input이 위치한 [index] 반환
     public int findIndexOfKeyInKeyArray(int input) {
-        //주의: search를 하는게 아니라 그냥 순서만 찾는 경우 음... 암튼 주의
         int index;
         for (index = 0; index < currentNumberOfKeys && input > keys[index]; index++) {
         } //input이 모든 key값보다 크면 keys 크기를 1 초과하는 값을 가짐
